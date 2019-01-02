@@ -9,5 +9,5 @@ The operation is easy: just enter
 
 So far, just a smart part finished. The supported algorithms are listed below:
 
-""Encryption"": ElGamal
-""Signature"": None
+***Encryption***: ElGamal
+***Signature***: None
