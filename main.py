@@ -33,39 +33,45 @@ def listUsers():
 		print('\nindex\tname\tpublic key\tcipher number\n')
 		count = 0
 		for u in parameters['names']: 
-			print('[%d]\t%s\t%d\t\t%d' % (count + 1, parameters['names'][count], parameters['users'][parameters['names'][count]]['pk'], len(parameters['users'][parameters['names'][count]]['cipher'])))
+			print('[%d]\t%s\t%s\t\t%d' % (count + 1, parameters['names'][count], parameters['users'][parameters['names'][count]]['pk'], len(parameters['users'][parameters['names'][count]]['cipher'])))
 			count += 1
 	else: print('\nNo user exists. Please enter [3] to add a new user to the system.')
 
-category = 0 # encryption = 0, signature = 1
-new, settings = loadJsonFile(os.getcwd() + '/settings.json', {'encryption': ['ElGamal'], 'signature':[], 'initData': {'ElGamal': {'q': 0, 'names': [], 'users': {}, 'security': security}}})
-algoIndex = chooseFromList(settings['encryption'], 'Encryption algorithm list', 'Please choose one encrytpion algorithm.')
-path = os.getcwd() + '/%s/%s.json' % ('Signature' if category else 'Encryption', settings['encryption'][algoIndex])
-new, parameters = loadJsonFile(path, settings['initData'][settings['encryption'][algoIndex]])
+category = ['Encryption', 'encryption', 'Signature', 'signature']
+typeIndex = 0 # 0 for encryption, 1 for signature
+_type = category[2 * typeIndex + 1]
+Type = category[2 * typeIndex ]
+new, settings = loadJsonFile(os.getcwd() + '/settings.json', {'encryption': ['RSA', 'ElGamal'], 'signature':[], 'initData': {'RSA': {'names': [], 'users': {}, 'security': security}, 'ElGamal': {'q': 0, 'names': [], 'users': {}, 'security': security}}})
+algoIndex = chooseFromList(settings[_type], '%s algorithm list' % Type, 'Please choose one %s algorithm.' % _type)
+path = os.getcwd() + '/%s/%s.json' % (Type, settings[_type][algoIndex])
+new, parameters = loadJsonFile(path, settings['initData'][settings[_type][algoIndex]])
 algorithm = None
-if category: # Signature
+if typeIndex: # Signature
 	pass
 else: #Encryption
-	if algoIndex == 0: algorithm = Encryption.ElGamal(parameters)
+	if algoIndex == 0: algorithm = Encryption.RSA(parameters)
+	elif algoIndex == 1: algorithm = Encryption.ElGamal(parameters)
 if new: 
 	parameters = algorithm.para
 	saveJsonFile(path, parameters)
-print('\nParameters of the %s %s established.\n%s' % (settings['encryption'][algoIndex], 'signature' if category else 'encryption', algorithm.description))
+print('\nParameters of the %s %s established.\n%s' % (settings[_type][algoIndex], _type, algorithm.description))
 
 while True:
-	if category == 0: # encryption
+	if typeIndex == 0: # encryption
 		command = chooseFromList(['Exit', 'List users', 'Add a new user', 'Encrypt a messge', 'Decrypt a cipher'], 'Command list', 'Please enter a command.')
 		if command == 0: break
 		elif command == 1:
 			listUsers()
 		elif command == 2: 
 			name = input('\nPlease enter a name to create new public / private key pair. ')
-			sk, pk = algorithm.keyGenerate()
-			parameters['names'].append(name)
-			parameters['users'][name] = {'pk': pk, 'sk': sk, 'cipher': []}
-			saveJsonFile(path, parameters)
-			print('%s\'s identity created.' % name)
-			listUsers()
+			if name not in parameters['names']:
+				sk, pk = algorithm.keyGenerate()
+				parameters['names'].append(name)
+				parameters['users'][name] = {'pk': pk, 'sk': sk, 'cipher': []}
+				saveJsonFile(path, parameters)
+				print('%s\'s identity created.' % name)
+				listUsers()
+			else: print('\nUser %s exists.' % name)
 		elif command == 3:
 			listUsers()
 			index = chooseFromList(parameters['names'], 'User list', 'Please select the receiver.')
@@ -75,7 +81,7 @@ while True:
 			c = algorithm.encrypt(pk, m)
 			receiver['cipher'].append(c)
 			saveJsonFile(path, parameters)
-			print('\nMessage %s has been encrypted using public key %d.' % (m, pk))
+			print('\nMessage %s has been encrypted using public key %s.' % (m, pk))
 			listUsers()
 		elif command == 4: 
 			listUsers()

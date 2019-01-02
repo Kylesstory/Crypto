@@ -1,5 +1,6 @@
 import random
 from Essencial import BigPrime, ModInv
+from math import gcd
 
 def exp(g, e, m):
 	return pow(g, e, m)
@@ -38,5 +39,27 @@ class ElGamal(object):
 	def decrypt(self, sk, c):
 		return c[1] * ModInv.modinv(exp(c[0], sk, self.p), self.p) % self.p
 
-						
+class RSA(object):
+	"""docstring for RSA"""
+	def __init__(self, para):
+		super(RSA, self).__init__()
+		self.para = para
+		self.security = para['security']
+		self.description = 'secure length:\t%d' % para['security']
+										
+	def keyGenerate(self):
+		p = BigPrime.generate_prime_number(int(self.security / 2))
+		q = BigPrime.generate_prime_number(int(self.security / 2))
+		n = p * q
+		_lambda = int((p - 1) * (q - 1) / gcd(p - 1, q - 1))
+		while True:
+			e = random.getrandbits(self.security) % _lambda
+			d = ModInv.modinv(e, _lambda)
+			if d != -1: break
+		return [d, n], [e, n]
 
+	def encrypt(self, pk, m):
+		return exp(m, pk[0], pk[1])
+
+	def decrypt(self, sk, c):
+		return exp(c, sk[0], sk[1])
