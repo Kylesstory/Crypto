@@ -7,7 +7,7 @@ The operation is easy, just enter
 
 ***python3 main.py***
 
-So far, just a smart part finished. The supported algorithms are listed below:
+So far, just a small part finished. The supported algorithms are listed below:
 
 ***Encryption***: RSA, ElGamal, Paillier
 
