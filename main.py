@@ -38,7 +38,7 @@ def listUsers():
 	else: print('\nNo user exists. Please enter [3] to add a new user to the system.')
 
 category = 0 # encryption = 0, signature = 1
-new, settings = loadJsonFile(os.getcwd() + '/settings.json', {'encryption': ['ElGamal'], 'signature':[], 'initData': {'ElGamal': {'q': 0, 'names': [], 'users': {}, 'security': 16}}})
+new, settings = loadJsonFile(os.getcwd() + '/settings.json', {'encryption': ['ElGamal'], 'signature':[], 'initData': {'ElGamal': {'q': 0, 'names': [], 'users': {}, 'security': security}}})
 algoIndex = chooseFromList(settings['encryption'], 'Encryption algorithm list', 'Please choose one encrytpion algorithm.')
 path = os.getcwd() + '/%s/%s.json' % ('Signature' if category else 'Encryption', settings['encryption'][algoIndex])
 new, parameters = loadJsonFile(path, settings['initData'][settings['encryption'][algoIndex]])
