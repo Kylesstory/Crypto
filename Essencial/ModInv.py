@@ -11,6 +11,6 @@ def egcd(a, b):
 def modinv(a, m):
     g, x, y = egcd(a, m)
     if g != 1:
-        return -1
+        return -1 # slightly modified here from original program
     else:
         return x % m

@@ -41,7 +41,7 @@ category = ['Encryption', 'encryption', 'Signature', 'signature']
 typeIndex = 0 # 0 for encryption, 1 for signature
 _type = category[2 * typeIndex + 1]
 Type = category[2 * typeIndex ]
-new, settings = loadJsonFile(os.getcwd() + '/settings.json', {'encryption': ['RSA', 'ElGamal', 'Paillier'], 'signature':[], 'initData': {'RSA': {'names': [], 'users': {}, 'security': security}, 'ElGamal': {'q': 0, 'names': [], 'users': {}, 'security': security}, 'Paillier': {'names': [], 'users': {}, 'security': security}}})
+new, settings = loadJsonFile(os.getcwd() + '/settings.json', {'encryption': ['RSA', 'ElGamal', 'Paillier', 'CramerShoup'], 'signature':[], 'initData': {'RSA': {'names': [], 'users': {}, 'security': security}, 'ElGamal': {'q': 0, 'names': [], 'users': {}, 'security': security}, 'Paillier': {'names': [], 'users': {}, 'security': security}, 'CramerShoup': {'q': 0, 'names': [], 'users': {}, 'security': security}}})
 algoIndex = chooseFromList(settings[_type], '%s algorithm list' % Type, 'Please choose one %s algorithm.' % _type)
 path = os.getcwd() + '/%s/%s.json' % (Type, settings[_type][algoIndex])
 new, parameters = loadJsonFile(path, settings['initData'][settings[_type][algoIndex]])
@@ -52,6 +52,7 @@ else: #Encryption
 	if algoIndex == 0: algorithm = Encryption.RSA(parameters)
 	elif algoIndex == 1: algorithm = Encryption.ElGamal(parameters)
 	elif algoIndex == 2: algorithm = Encryption.Paillier(parameters)
+	elif algoIndex == 3: algorithm = Encryption.CramerShoup(parameters)
 if new: 
 	parameters = algorithm.para
 	saveJsonFile(path, parameters)
@@ -82,7 +83,7 @@ while True:
 			c = algorithm.encrypt(pk, m)
 			receiver['cipher'].append(c)
 			saveJsonFile(path, parameters)
-			print('\nMessage %s has been encrypted using public key %s.' % (m, pk))
+			print('\nMessage %s has been encrypted as %s using %s\'s public key %s.' % (m, c, parameters['names'][index], pk))
 			listUsers()
 		elif command == 4: #decrypt
 			listUsers()
