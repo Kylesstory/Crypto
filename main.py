@@ -45,19 +45,29 @@ def listUsers():
 index = chooseFromList(['Public key encryption', 'Digital signature', 'Reset all data'], 'Cryptographic function list', 'Please choose your function.')
 new, settings = loadJsonFile(os.getcwd() + '/settings.json', {'encryption': ['RSA', 'ElGamal', 'Paillier', 'CramerShoup'], 'signature':['RSA', 'DSA'], 'initData': {'RSA': {'names': [], 'users': {}, 'security': security}, 'ElGamal': {'q': 0, 'names': [], 'users': {}, 'security': security}, 'Paillier': {'names': [], 'users': {}, 'security': security}, 'CramerShoup': {'q': 0, 'names': [], 'users': {}, 'security': security}}})
 if index == 2: # reset all stored data
-	pathes = [os.getcwd() + '/%s/%s.json' % (dictionary['Upper'][x], y) for x in range(2) for y in settings[dictionary['lower'][x]]]
-	pathes.append(os.getcwd() + '/settings.json')
+	rawPath = [os.getcwd() + '/%s/%s.json' % (dictionary['Upper'][x], y) for x in range(2) for y in settings[dictionary['lower'][x]]]
+	rawPath.append(os.getcwd() + '/settings.json')
 	print('\n\t-- Json file list --\n')
-	for p in pathes: 
-		if os.path.exists(p): print(p)
+	pathes = []
+	for p in rawPath: 
+		if os.path.exists(p): 
+			pathes.append(p)
+			print(p)
 	if 'y' == input('\nConfirm to delete all json and pycache files? [y/N] '):
-		for p in pathes: 
-			if os.path.exists(p): os.remove(p)
 		caches = ['%s/%s/__pycache__/' % (os.getcwd(), d) for d in ['Encryption', 'Signature', 'Essential']]
+		print('\n\t-- Deleted file list --\n')
 		for c in caches:
 			for pyc in os.listdir(c):
 				os.remove(c + pyc)
+				print('delete\t%s' % (c + pyc))
+		for c in caches:
 			os.removedirs(c)
+			print('delete\t%s' % c)
+		for p in pathes:
+			os.remove(p)
+			print('delete\t%s' % p)
+		print('\nProgram reseted.')
+
 else: # encryption or signature
 	storage = dictionary['cipher'][index]
 	algoIndex = chooseFromList(settings[dictionary['lower'][index]], '%s algorithm list' % dictionary['Upper'][index], 'Please choose one %s algorithm.' % dictionary['lower'][index])
@@ -123,4 +133,4 @@ else: # encryption or signature
 							print('%s %s has been deleted.' % (dictionary['Upper'][index], cipher))
 					else: print('\nNo %s exists.' % dictionary['cipher'][index])
 				listUsers()
-print('\n')
+print()
