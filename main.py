@@ -88,7 +88,10 @@ else: # encryption or signature
 	print('\nParameters of the %s %s established.\n%s' % (settings[dictionary['lower'][index]][algoIndex], dictionary['lower'][index], algorithm.description))
 
 	while True:
-		command = chooseFromList(['Exit', 'List users', 'Add a new user', dictionary['en-cipher'][index], dictionary['de-cipher'][index]], 'Command list', 'Please enter a command.')
+		commands = ['Exit', 'List users', 'Add a new user', dictionary['en-cipher'][index], dictionary['de-cipher'][index]]
+		if algorithm.bonus != None:
+			for b in algorithm.bonus: commands.append(b)
+		command = chooseFromList(commands, 'Command list', 'Please enter a command.')
 		if command == 0: break # break
 		elif command == 1: # list users
 			listUsers()
@@ -102,9 +105,9 @@ else: # encryption or signature
 				print('%s\'s identity created.' % name)
 				listUsers()
 			else: print('\nUser %s exists.' % name)
-		elif command in [3, 4]: 
-			listUsers()
+		elif command in [3, 4, 5]: 
 			if len(parameters['names']):
+				listUsers()
 				n = chooseFromList(parameters['names'], 'User list', 'Please select the %s.' % dictionary['user'][index])
 				user = parameters['users'][parameters['names'][n]]
 				pk = user['pk']
@@ -117,7 +120,7 @@ else: # encryption or signature
 					user[storage].append([m, cipher] if index else cipher)
 					saveJsonFile(path, parameters)
 					print('\nMessage %s has been %s as %s %s using %s\'s %s key.' % (m, dictionary['en-ciphered'][index], dictionary['cipher'][index], cipher, parameters['names'][n], dictionary['key'][index]))
-				else: # de-cipher
+				elif command == 4: # de-cipher
 					if len(user[storage]):
 						n = chooseFromList(user[storage], 'List of %s' % storage, 'Please choose one %s.' % storage)
 						cipher = user[storage][n][1] if index else user[storage][n]
@@ -133,5 +136,13 @@ else: # encryption or signature
 							saveJsonFile(path, parameters)
 							print('%s %s has been deleted.' % (dictionary['Upper'][index], cipher))
 					else: print('\nNo %s exists.' % dictionary['cipher'][index])
+				elif command == 5: # additional functions like homomorphic encryption
+					c1 = user[storage][chooseFromList(user[storage], 'List of %s' % storage, 'Please choose the first %s.' % storage)]
+					c2 = user[storage][chooseFromList(user[storage], 'List of %s' % storage, 'Please choose the second %s.' % storage)]
+					c = algorithm.homomorphic(pk, c1, c2)
+					user[storage].append(c)
+					saveJsonFile(path, parameters)
+					print('\nNew ciphertext %s is homomorphically computed by ciphertexts %s and %s.' % (c, c1, c2))
 				listUsers()
+
 print()
