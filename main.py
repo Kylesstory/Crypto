@@ -2,7 +2,7 @@ import os, json
 from Encryption import Encryption 
 from Signature import Signature
 
-dictionary = {'Upper': ['Encryption', 'Signature'], 'lower': ['encryption', 'signature'], 'cipher': ['ciphertext', 'signatures'], 'en-cipher': ['Encrypt a message', 'Sign a message'], 'de-cipher': ['Decrypt a ciphertext', 'Verify a signature'], 'user': ['receiver', 'signer'], 'en-ciphered': ['encrypted', 'signed'], 'key': ['public', 'secret']}
+dictionary = {'Upper': ['Encryption', 'Signature'], 'lower': ['encryption', 'signature'], 'cipher': ['ciphertext', 'signature'], 'en-cipher': ['Encrypt a message', 'Sign a message'], 'de-cipher': ['Decrypt a ciphertext', 'Verify a signature'], 'user': ['receiver', 'signer'], 'en-ciphered': ['encrypted', 'signed'], 'key': ['public', 'secret']}
 parameters = None # the whole data for an algorithm, stored in files
 security = 16 # secure parameter that should be about 1024; 16 is a computable but insecure choice.
 index = -1 # 0 for encryption; and 1 for signature
@@ -43,7 +43,7 @@ def listUsers():
 	else: print('\nNo user exists. Please enter [3] to add a new user to the system.')
 
 index = chooseFromList(['Public key encryption', 'Digital signature', 'Reset all data'], 'Cryptographic function list', 'Please choose your function.')
-new, settings = loadJsonFile(os.getcwd() + '/settings.json', {'encryption': ['RSA', 'ElGamal', 'Paillier', 'CramerShoup'], 'signature':['RSA', 'DSA'], 'initData': {'RSA': {'names': [], 'users': {}, 'security': security}, 'ElGamal': {'q': 0, 'names': [], 'users': {}, 'security': security}, 'Paillier': {'names': [], 'users': {}, 'security': security}, 'CramerShoup': {'q': 0, 'names': [], 'users': {}, 'security': security}}})
+new, settings = loadJsonFile(os.getcwd() + '/settings.json', {'encryption': ['RSA', 'ElGamal', 'Paillier', 'CramerShoup'], 'signature':['RSA', 'DSA'], 'initData': {'RSA': {'names': [], 'users': {}, 'security': security}, 'ElGamal': {'q': 0, 'names': [], 'users': {}, 'security': security}, 'Paillier': {'names': [], 'users': {}, 'security': security}, 'CramerShoup': {'q': 0, 'names': [], 'users': {}, 'security': security}, 'DSA': {'q': 0, 'names': [], 'users': {}, 'security': security}}})
 if index == 2: # reset all stored data
 	rawPath = [os.getcwd() + '/%s/%s.json' % (dictionary['Upper'][x], y) for x in range(2) for y in settings[dictionary['lower'][x]]]
 	rawPath.append(os.getcwd() + '/settings.json')
@@ -69,13 +69,14 @@ if index == 2: # reset all stored data
 		print('\nProgram reseted.')
 
 else: # encryption or signature
-	storage = dictionary['cipher'][index]
 	algoIndex = chooseFromList(settings[dictionary['lower'][index]], '%s algorithm list' % dictionary['Upper'][index], 'Please choose one %s algorithm.' % dictionary['lower'][index])
 	path = os.getcwd() + '/%s/%s.json' % (dictionary['Upper'][index], settings[dictionary['lower'][index]][algoIndex])
 	new, parameters = loadJsonFile(path, settings['initData'][settings[dictionary['lower'][index]][algoIndex]])
+	storage = dictionary['cipher'][index]
 	algorithm = None
 	if index: # Signature
 		if algoIndex == 0: algorithm = Signature.RSA(parameters)
+		elif algoIndex == 1: algorithm = Signature.DSA(parameters)
 	else: #Encryption
 		if algoIndex == 0: algorithm = Encryption.RSA(parameters)
 		elif algoIndex == 1: algorithm = Encryption.ElGamal(parameters)
@@ -115,14 +116,14 @@ else: # encryption or signature
 					else: cipher = algorithm.encrypt(pk, m) # encryption 
 					user[storage].append([m, cipher] if index else cipher)
 					saveJsonFile(path, parameters)
-					print('\nMessage %s has been %s as %s using %s\'s %s key.' % (m, dictionary['en-ciphered'][index], cipher, parameters['names'][n], dictionary['key'][index]))
+					print('\nMessage %s has been %s as %s %s using %s\'s %s key.' % (m, dictionary['en-ciphered'][index], dictionary['cipher'][index], cipher, parameters['names'][n], dictionary['key'][index]))
 				else: # de-cipher
 					if len(user[storage]):
 						n = chooseFromList(user[storage], 'List of %s' % storage, 'Please choose one %s.' % storage)
 						cipher = user[storage][n][1] if index else user[storage][n]
 						if index: # verify a signature
 							m = user[storage][n][0]
-							print('\nSignature %d on message %d is verified %s.' % (cipher, m, 'valid' if algorithm.verify(pk, m, cipher) else 'invalid')) # verify a signature
+							print('\nSignature %s on message %d is verified %s.' % (cipher, m, 'valid' if algorithm.verify(pk, m, cipher) else 'invalid')) # verify a signature
 						else: # decrypt a ciphertext
 							sk = user['sk']
 							m = algorithm.decrypt(sk, pk, cipher)
