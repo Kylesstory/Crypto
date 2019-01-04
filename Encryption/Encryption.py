@@ -1,10 +1,8 @@
 import random
-from Essencial import BigPrime, ModInv
+from Essential import BigPrime, ModInv, Hash
 from math import gcd
-import hashlib
 
-def exp(g, e, m):
-	return pow(g, e, m)
+def exp(g, e, m): return pow(g, e, m)
 
 class RSA(object):
 	"""docstring for RSA"""
@@ -29,7 +27,7 @@ class RSA(object):
 		return exp(m, pk[0], pk[1])
 
 	def decrypt(self, sk, pk, c):
-		return exp(c, sk[0], pk[1])
+		return exp(c, sk, pk[1])
 
 class ElGamal(object):
 	"""docstring for ElGamal"""
@@ -113,7 +111,7 @@ class CramerShoup(object):
 		self.g = para['g']
 		self.h = para['h']
 		self.q = para['q']
-		self.description = 'secure length:\t%d\ngenerator 1:\t%d\ngenerator 2:\t%d\nmodular:\t%d\norder:\t\t%d\nhash function: \tthe MSB [security] bits of recursive SHA3-256 hash function result.' % (para['security'], para['g'], para['h'], para['p'], para['q'])
+		self.description = 'secure length:\t%d\ngenerator 1:\t%d\ngenerator 2:\t%d\nmodular:\t%d\norder:\t\t%d\nhash function: \tthe MSB [security] bits of repeated SHA3-256 hash function results.' % (para['security'], para['g'], para['h'], para['p'], para['q'])
 
 	def keyGenerate(self):
 		sk = [random.getrandbits(self.security) % self.q for i in range(5)]
@@ -128,21 +126,15 @@ class CramerShoup(object):
 		v = exp(self.h, r, self.p)
 		w = m * exp(pk[2], r, self.p) % self.p
 
-		h = self._hash(str(u) + str(v) + str(w))
+		h = Hash.hash3_256([u, v, w], self.security)
 		t = (pk[0] * exp(pk[1], h, self.p)) % self.p
 		x = exp(t, r, self.p)
 		return [u, v, w, x]
 
 	def decrypt(self, sk, pk, c):
-		h = self._hash(str(c[0]) + str(c[1]) + str(c[2]))
+		h = Hash.hash3_256([c[0], c[1], c[2]], self.security)
 		t = (exp(c[0], ((sk[0] + sk[2] * h) % self.q) , self.p) * exp(c[1], ((sk[1] + sk[3] * h) % self.q), self.p)) % self.p
 		m = (c[2] * ModInv.modinv(exp(c[0], sk[4], self.p), self.p)) % self.p
 		assert c[3] == t
 		return m
-
-	def _hash(self, x):
-		x = hashlib.sha3_256(str(x).encode('utf-8')).hexdigest()
-		h = ''
-		l = int(self.security / 4)
-		while len(h) <= l: h = h + str(x)
-		return int(h[:l], 16)
+	

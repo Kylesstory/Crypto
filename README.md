@@ -5,8 +5,10 @@ This is still a beta version written by Python 3.7.2. The operation is easy, jus
 
 ***python3 main.py***
 
-So far, just the encryption algorithms finished. The supported algorithms are listed below:
+So far, just part of algorithms finished. The supported algorithms are listed below:
 
 ***Public key encryption***: RSA, ElGamal, Paillier, CramerShoup
 
-***Digital signature***: Not yet
+***Digital signature***: RSA
+
+***Reset***: an easy way to reset the program.
