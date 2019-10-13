@@ -11,3 +11,4 @@ The supported algorithms are listed below:
 
 ***Digital signature***: RSA, DSA
 
+***Cryptographic commitment***: Hash-based, ElGamal, Pederson
