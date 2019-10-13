@@ -11,4 +11,3 @@ The supported algorithms are listed below:
 
 ***Digital signature***: RSA, DSA
 
-***Reset***: an easy way to reset the program.
