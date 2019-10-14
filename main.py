@@ -1,17 +1,12 @@
 from Encryption import PKEncryption as PKE
 from Signature import DigitalSignature as DS
 from Commitment import Commitment as Commit
+from Essential import Utilities as utils
 
-message = 75
-pkes = [PKE.RSA(256), PKE.ElGamal(128), PKE.Paillier(128), PKE.CramerShoup(128)]
-dss = [DS.RSA(256), DS.DSA(128)]
-commits = [Commit.HashCommit(256), Commit.ElGamal(128), Commit.Pederson(128)]
+security = 128
+pkes = [PKE.RSA(security << 1), PKE.ElGamal(security), PKE.Paillier(security), PKE.CramerShoup(security)]
+dss = [DS.RSA(security << 1), DS.DSA(security)]
+commits = [Commit.HashCommit(security << 1), Commit.ElGamal(security), Commit.Pederson(security)]
 
-for pke in pkes:
-	pke.demo(message)
-
-for ds in dss:
-	ds.demo(message)
-
-for commit in commits:
-	commit.demo(message)
+for algorithm in (pkes + dss + commits):
+	algorithm.demo(utils.randomBits(security - 3))

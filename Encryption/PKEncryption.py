@@ -34,8 +34,9 @@ class RSA(PKEncryption):
 
 	def demo(self, message):
 		c = self.encrypt(message)
-		param = {'security': self.security, 'n': self.n, 'd': self.d, 'e': self.e, 'message': message, 'encrypted': c, 'decrypted': self.decrypt(c)}
-		utils.colorfulPrint('RSA encryption', param)
+		m = self.decrypt(c)
+		param = {'security': self.security, 'n': self.n, 'd': self.d, 'e': self.e, 'message': message, 'encrypted': c, 'decrypted': m, 'success': (m == message)}
+		utils.show('RSA encryption', param)
 
 class ElGamal(PKEncryption):
 	"""docstring for ElGamal"""
@@ -50,15 +51,16 @@ class ElGamal(PKEncryption):
 		return [c1, c2]
 
 	def decrypt(self, c):
-		return c[1] * utils.modinv(pow(c[0], self.x, self.p), self.p) % self.p
+		return utils.divide(c[1], pow(c[0], self.x, self.p), self.p)
 
 	def homomorphic(self, pk, c1, c2):
 		return [(c1[0] * c2[0]) % self.p, (c1[1] * c2[1]) % self.p]
 
 	def demo(self, message):
 		c = self.encrypt(message)
-		param = {'security': self.security, 'g': self.g, 'q': self.q, 'p': self.p, 'sk': self.x, 'pk': self.y, 'message': message, 'encrypted': c, 'decrypted': self.decrypt(c)}
-		utils.colorfulPrint('ElGamal encryption', param)
+		m = self.decrypt(c)
+		param = {'security': self.security, 'g': self.g, 'q': self.q, 'p': self.p, 'sk': self.x, 'pk': self.y, 'message': message, 'encrypted': c, 'decrypted': m, 'success': (m == message)}
+		utils.show('ElGamal encryption', param)
 
 class Paillier(PKEncryption):
 	"""docstring for Paillier"""
@@ -66,29 +68,28 @@ class Paillier(PKEncryption):
 		self.security = security
 		self.n, self.sk = utils.composeOrder(security)
 		self.n2 = self.n * self.n
-		x = utils.randomBits(2 * security) % self.n2
-		self.g = pow(x, 2, self.n2)
+		self.g = utils.coPrime(security << 1, self.n2, self.sk * self.n)
 
 	def encrypt(self, m):
-		r = utils.coPrime(2 * self.security, self.n2, self.sk * self.n)
-		rn = pow(r, self.n, self.n2)
-		return (pow(self.g, m, self.n2) * rn) % self.n2
+		r = utils.coPrime(self.security << 1, self.n2, self.sk * self.n)
+		return (pow(self.g, m, self.n2) * pow(r, self.n, self.n2)) % self.n2
 
 	def decrypt(self, c):
 		x = self.L(pow(c, self.sk, self.n2))
 		y = self.L(pow(self.g, self.sk, self.n2))
-		return (x * utils.modinv(y, self.n)) % self.n
+		return utils.divide(x, y, self.n)
 
 	def homomorphic(self, c1, c2):
 		return (c1 * c2) % self.n2
 
 	def L(self, x):
-		return int((x - 1) % self.n2 / self.n)
+		return int((x - 1) / self.n)
 
 	def demo(self, message):
 		c = self.encrypt(message)
-		param = {'security': self.security, 'n2': self.n2, 'n': self.n, 'sk': self.sk, 'g': self.g, 'message': message, 'encrypted': c, 'decrypted': self.decrypt(c)}
-		utils.colorfulPrint('Paillier encryption', param)
+		m = self.decrypt(c)
+		param = {'security': self.security, 'n': self.n, 'sk': self.sk, 'g': self.g, 'message': message, 'encrypted': c, 'decrypted': m, 'success': (m == message)}
+		utils.show('Paillier encryption', param)
 
 class CramerShoup(PKEncryption):
 	"""docstring for CramerShoup"""
@@ -116,16 +117,12 @@ class CramerShoup(PKEncryption):
 	def decrypt(self, c):
 		h = utils.hash([c[0], c[1], c[2]], self.security - 1)
 		t = (pow(c[0], ((self.sk[0] + self.sk[2] * h) % self.q) , self.p) * pow(c[1], ((self.sk[1] + self.sk[3] * h) % self.q), self.p)) % self.p
-		if c[3] == t:
-			m = (c[2] * utils.modinv(pow(c[0], self.sk[4], self.p), self.p)) % self.p
-			return m
-		else:
-			print(c[3])
-			print(t)
-			return 0
+		assert c[3] == t
+		return utils.divide(c[2], pow(c[0], self.sk[4], self.p), self.p)
 
 	def demo(self, message):
 		pks = [self.c, self.d, self.y]
 		c = self.encrypt(message)
-		param = {'security': self.security, 'g': self.g, 'h': self.h, 'q': self.q, 'p': self.p, 'sk': self.sk, 'pk': pks, 'message': message, 'encrypted': c, 'decrypted': self.decrypt(c)}
-		utils.colorfulPrint('Cramer Shoup encryption', param)
+		m = self.decrypt(c)
+		param = {'security': self.security, 'g': self.g, 'h': self.h, 'q': self.q, 'p': self.p, 'sk': self.sk, 'pk': pks, 'message': message, 'encrypted': c, 'decrypted': m, 'success': (m == message)}
+		utils.show('Cramer Shoup encryption', param)

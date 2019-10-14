@@ -32,7 +32,7 @@ class RSA(DigitalSignature):
 	def demo(self, message):
 		s = self.sign(message)
 		param = {'security': self.security, 'n': self.n, 'd': self.d, 'e': self.e, 'message': message, 'signature': s, 'verification': self.verify(message, s)}
-		utils.colorfulPrint('RSA signature', param)
+		utils.show('RSA signature', param)
 		
 class DSA(DigitalSignature):
 	"""docstring for DSA"""
@@ -47,7 +47,8 @@ class DSA(DigitalSignature):
 			while r == s or r == 0:
 				k = utils.randomBits(self.security) % self.q
 				r = pow(self.g, k, self.p) % self.q
-			s = (utils.modinv(k, self.q) * (utils.hash(m, self.security) + self.sk * r)) % self.q
+			s = utils.divide(utils.hash(m, self.security) + self.sk * r, k, self.q)
+			# s = (utils.modinv(k, self.q) * (utils.hash(m, self.security) + self.sk * r)) % self.q
 		return [r, s]
 
 	def verify(self, m, sig):
@@ -61,5 +62,5 @@ class DSA(DigitalSignature):
 	def demo(self, message):
 		s = self.sign(message)
 		param = {'security': self.security, 'g': self.g, 'q': self.q, 'p': self.p, 'sk': self.sk, 'pk': self.pk, 'message': message, 'signature': s, 'verification': self.verify(message, s)}
-		utils.colorfulPrint('DSA signature', param)
+		utils.show('DSA signature', param)
 	

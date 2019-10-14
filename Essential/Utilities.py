@@ -89,54 +89,71 @@ def generate_prime_number(length=1024):
         p = generate_prime_candidate(length)
     return p
 
-def strongPrime(security): # return a pair of primes p, q s.t. p = 2q + 1 
+def strongPrime(length): # return a pair of primes p, q s.t. p = 2q + 1 
 	p = q = 4
 	while not is_prime(p, 128):
-		q = generate_prime_number(security - 1)
+		q = generate_prime_number(length - 1)
 		p = (q << 1) + 1
 	return p, q
 
-def composeOrder(security): # return n and p2q2 as a compose order group
-	p, p2 = strongPrime(int(security / 2))
+def composeOrder(length): # return n and p2q2 as a compose order group
+	p, p2 = strongPrime(int(length / 2))
 	q = p
-	while (q == p): q, q2 = strongPrime(int(security / 2))
+	while (q == p): q, q2 = strongPrime(int(length / 2))
 	return p * q, p2 * q2
 
-def primeOrder(security): # return p, q, g as a prime order group
-	p, q = strongPrime(security)
-	return p, q, coPrime(security, p, q)
+def primeOrder(length): # return p, q, g as a prime order group
+	p, q = strongPrime(length)
+	return p, q, coPrime(length, p, q)
 
-def coPrime(security, n, q = 0): # find a number g coprime to modular
+def coPrime(length, n, q = 0): # find a number g coprime to n (with optional pow(g, q, n) = 1 if q > 1)
 	g = 1
 	while (g == 1) or (egcd(g, n)[0] != 1) or ((q > 1) and (pow(g, q, n) != 1)):
-		g = randomBits(security) % n
+		g = randomBits(length) % n
 	return g
 
-def dlPair(security, g, q, p): # find x and g^x
+def dlPair(length, g, q, p): # find x and g^x
 	x = 0
-	while x == 0: x = randomBits(security) % q
+	while x == 0: x = randomBits(length) % q
 	return x, pow(g, x, p)
 
-def colorfulPrint(header, data):
-	print('%s {' % (header))
-	keys = [*data]
-	for key in keys:
-		if isinstance(data[key], list):
-			print('  %s: [' % key)
-			for d in data[key]:
-				print('    %s%s' % (colorfulTypes(d), ',' if d != data[key][-1] else ''))
-			print('  ]')
-		else:
-			print('  %s: %s%s' % (key, colorfulTypes(data[key]), ',' if (key != keys[-1]) else ''))
-	print('}\n')
+def divide(a, b, n):
+	return (a * modinv(b, n)) % n
+
+def show(header, data):
+	print('%s ' % (header), end = '')
+	deploy(data)
+	print('')
+
+def deploy(data, padding = 2, comma = False):
+	if isinstance(data, list):
+		print('[')
+		length = len(data)
+		for i in range(length): 
+			if isinstance(data[i], list):
+				print('\n%s' % (' ' * padding + 2))
+				deploy(data[i], padding + 2, i != (length - 1))
+			else:
+				print('%s%s%s' % (' ' * padding, colorfulTypes(data[i]), ',' if i != (length - 1) else ''))
+		print('%s]%s' % (' ' * (padding - 2), ',' if comma else ''))
+	elif isinstance(data, dict):
+		print('{')
+		keys = [ * data ]
+		length = len(keys)
+		for i in range(length): 
+			key = keys[i]
+			print('%s%s: ' % (' ' * padding, key), end = '')
+			if isinstance(data[key], (list, dict)):
+				deploy(data[key], padding + 2, i != (length - 1))
+			else:
+				print('%s%s' % (colorfulTypes(data[key]), ',' if i != (length - 1) else ''))
+		print('%s}%s' % (' ' * (padding - 2), ',' if comma else ''))
+	
 
 def colorfulTypes(raw):
 	if isinstance(raw, bool):
-		return '%s%s%s' % (Fore.YELLOW, str(raw), Fore.RESET)
-	if isinstance(raw, int):
-		if raw < 100000: # for small numbers
-			return '%s%d%s' % (Fore.YELLOW, raw, Fore.RESET)
-		else:
-			raw = hex(raw)[2:]
-	if isinstance(raw, str):
+		return '%s%r%s' % (Fore.YELLOW, raw, Fore.RESET)
+	elif isinstance(raw, int):
+		return '%s%d%s' % (Fore.YELLOW, raw, Fore.RESET) if raw < 100000 else '%s\'%x\'%s' % (Fore.GREEN, raw, Fore.RESET)
+	elif isinstance(raw, str):
 		return '%s\'%s\'%s' % (Fore.GREEN, raw, Fore.RESET)
