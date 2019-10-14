@@ -20,7 +20,7 @@ class RSA(PKEncryption):
 		self.security = security
 		self.n, p2q2 = utils.composeOrder(security)
 		_lambda = p2q2 << 1
-		self.e = utils.generator(security, _lambda)
+		self.e = utils.coPrime(security, _lambda)
 		self.d = utils.modinv(self.e, _lambda)
 
 	def encrypt(self, m):
@@ -42,10 +42,10 @@ class ElGamal(PKEncryption):
 	def __init__(self, security):
 		self.security = security
 		self.p, self.q, self.g = utils.primeOrder(security)
-		self.x, self.y = utils.primeOrderPair(security, self.g, self.q, self.p)
+		self.x, self.y = utils.dlPair(security, self.g, self.q, self.p)
 
 	def encrypt(self, m):
-		r, c1 = utils.primeOrderPair(self.security, self.g, self.q, self.p)
+		r, c1 = utils.dlPair(self.security, self.g, self.q, self.p)
 		c2 = (m * pow(self.y, r, self.p)) % self.p
 		return [c1, c2]
 
@@ -70,7 +70,8 @@ class Paillier(PKEncryption):
 		self.g = pow(x, 2, self.n2)
 
 	def encrypt(self, m):
-		rn = pow(utils.generator(2 * self.security, self.n2), 2 * self.n, self.n2)
+		r = utils.coPrime(2 * self.security, self.n2, self.sk * self.n)
+		rn = pow(r, self.n, self.n2)
 		return (pow(self.g, m, self.n2) * rn) % self.n2
 
 	def decrypt(self, c):
@@ -96,7 +97,7 @@ class CramerShoup(PKEncryption):
 		self.p, self.q, self.g = utils.primeOrder(security)
 		self.h = self.g
 		while self.h == self.g:
-			self.h = utils.generator(security, self.p)
+			self.h = utils.coPrime(security, self.p, self.q)
 		self.sk = [utils.randomBits(security - 1) % self.q for i in range(5)]
 		self.c = pow(self.g, self.sk[0], self.p) * pow(self.h, self.sk[1], self.p) % self.p
 		self.d = pow(self.g, self.sk[2], self.p) * pow(self.h, self.sk[3], self.p) % self.p

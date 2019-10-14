@@ -20,7 +20,7 @@ class RSA(DigitalSignature):
 		self.security = security
 		self.n, p2q2 = utils.composeOrder(security)
 		_lambda = p2q2 << 1
-		self.e = utils.generator(security, _lambda)
+		self.e = utils.coPrime(security - 1, _lambda)
 		self.d = utils.modinv(self.e, _lambda)
 		
 	def sign(self, m):
@@ -39,13 +39,13 @@ class DSA(DigitalSignature):
 	def __init__(self, security):
 		self.security = security
 		self.p, self.q, self.g = utils.primeOrder(security)
-		self.sk, self.pk = utils.primeOrderPair(security, self.g, self.q, self.p)
+		self.sk, self.pk = utils.dlPair(security, self.g, self.q, self.p)
 
 	def sign(self, m):
 		r = s = 0
-		while s == 0:
-			while r == 0:
-				k = utils.generator(self.security, self.q)
+		while r == s or s == 0:
+			while r == s or r == 0:
+				k = utils.randomBits(self.security) % self.q
 				r = pow(self.g, k, self.p) % self.q
 			s = (utils.modinv(k, self.q) * (utils.hash(m, self.security) + self.sk * r)) % self.q
 		return [r, s]
@@ -55,9 +55,7 @@ class DSA(DigitalSignature):
 		s = sig[1]
 		assert r > 0 and r < self.q and s > 0 and s < self.q
 		w = utils.modinv(s, self.q)
-		u1 = (utils.hash(m, self.security) * w) % self.q
-		u2 = (r * w) % self.q
-		gk = (((pow(self.g, u1, self.p) * pow(self.pk, u2, self.p)) % self.p) % self.q)
+		gk = ((pow(self.g, utils.hash(m, self.security) * w, self.p) * pow(self.pk, r * w, self.p)) % self.p) % self.q
 		return (r == gk)
 
 	def demo(self, message):

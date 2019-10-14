@@ -89,35 +89,33 @@ def generate_prime_number(length=1024):
         p = generate_prime_candidate(length)
     return p
 
-def composeOrder(security):
-	p = q = p2 = q2 = 4
-	while not is_prime(p, 128):
-		p2 = generate_prime_number(int(security / 2) - 1)
-		p = 2 * p2 + 1
-	while (q == p) or (not is_prime(q, 128)):
-		q2 = generate_prime_number(int(security / 2) - 1)
-		q = (q2 << 1) + 1
-	return p * q, p2 * q2
-
-def primeOrder(security):
-	p = 4
+def strongPrime(security): # return a pair of primes p, q s.t. p = 2q + 1 
+	p = q = 4
 	while not is_prime(p, 128):
 		q = generate_prime_number(security - 1)
 		p = (q << 1) + 1
-	return p, q, generator(security, p)
+	return p, q
 
-def generator(security, modular):
-	g = modular
-	while egcd(g, modular)[0] != 1:
-		g = randomBits(security) % modular
+def composeOrder(security): # return n and p2q2 as a compose order group
+	p, p2 = strongPrime(int(security / 2))
+	q = p
+	while (q == p): q, q2 = strongPrime(int(security / 2))
+	return p * q, p2 * q2
+
+def primeOrder(security): # return p, q, g as a prime order group
+	p, q = strongPrime(security)
+	return p, q, coPrime(security, p, q)
+
+def coPrime(security, n, q = 0): # find a number g coprime to modular
+	g = 1
+	while (g == 1) or (egcd(g, n)[0] != 1) or ((q > 1) and (pow(g, q, n) != 1)):
+		g = randomBits(security) % n
 	return g
 
-def primeOrderPair(security, g, q, p): # in prime order groups find x and g^x
-	y = 1
-	while y == 1:
-		x = randomBits(security) % q
-		y = pow(g, x, p)
-	return x, y
+def dlPair(security, g, q, p): # find x and g^x
+	x = 0
+	while x == 0: x = randomBits(security) % q
+	return x, pow(g, x, p)
 
 def colorfulPrint(header, data):
 	print('%s {' % (header))
@@ -137,7 +135,7 @@ def colorfulTypes(raw):
 		return '%s%s%s' % (Fore.YELLOW, str(raw), Fore.RESET)
 	if isinstance(raw, int):
 		if raw < 100000: # for small numbers
-			return '%s%s%s' % (Fore.YELLOW, raw, Fore.RESET)
+			return '%s%d%s' % (Fore.YELLOW, raw, Fore.RESET)
 		else:
 			raw = hex(raw)[2:]
 	if isinstance(raw, str):

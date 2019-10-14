@@ -41,7 +41,7 @@ class ElGamal(Commitment):
 	def __init__(self, security):
 		self.security = security
 		self.p, self.q, self.g = utils.primeOrder(security)
-		self.h = utils.generator(security, self.p)
+		self.h = utils.coPrime(security, self.p, self.q)
 
 	def commit(self, m):
 		self.m = m
@@ -64,7 +64,7 @@ class Pederson(Commitment):
 	def __init__(self, security):
 		self.security = security
 		self.p, self.q, self.g = utils.primeOrder(security)
-		self.h = utils.generator(security, self.p)
+		self.h = utils.coPrime(security, self.p, self.q)
 
 	def commit(self, m):
 		self.m = m
