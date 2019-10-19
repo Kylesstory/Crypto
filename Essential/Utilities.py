@@ -113,7 +113,7 @@ def coPrime(length, n, q = 0): # find a number g coprime to n (with optional pow
 	return g
 
 def dlPair(length, g, q, p): # find x and g^x
-	x = 0
+	x = y = 0
 	while x == 0: x = randomBits(length) % q
 	return x, pow(g, x, p)
 
@@ -125,17 +125,17 @@ def show(header, data):
 	deploy(data)
 	print('')
 
-def deploy(data, padding = 2, comma = False):
+def deploy(data, padding = 4, comma = False):
 	if isinstance(data, list):
 		print('[')
 		length = len(data)
 		for i in range(length): 
 			if isinstance(data[i], list):
-				print('\n%s' % (' ' * padding + 2))
-				deploy(data[i], padding + 2, i != (length - 1))
+				print('%s' % (' ' * (padding)), end = '')
+				deploy(data[i], padding + 4, i != (length - 1))
 			else:
 				print('%s%s%s' % (' ' * padding, colorfulTypes(data[i]), ',' if i != (length - 1) else ''))
-		print('%s]%s' % (' ' * (padding - 2), ',' if comma else ''))
+		print('%s]%s' % (' ' * (padding - 4), ',' if comma else ''))
 	elif isinstance(data, dict):
 		print('{')
 		keys = [ * data ]
@@ -144,11 +144,10 @@ def deploy(data, padding = 2, comma = False):
 			key = keys[i]
 			print('%s%s: ' % (' ' * padding, key), end = '')
 			if isinstance(data[key], (list, dict)):
-				deploy(data[key], padding + 2, i != (length - 1))
+				deploy(data[key], padding + 4, i != (length - 1))
 			else:
 				print('%s%s' % (colorfulTypes(data[key]), ',' if i != (length - 1) else ''))
-		print('%s}%s' % (' ' * (padding - 2), ',' if comma else ''))
-	
+		print('%s}%s' % (' ' * (padding - 4), ',' if comma else ''))
 
 def colorfulTypes(raw):
 	if isinstance(raw, bool):

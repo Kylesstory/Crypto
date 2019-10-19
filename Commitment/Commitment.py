@@ -54,6 +54,9 @@ class ElGamal(Commitment):
 	def homomorphicAdd(self, c1, c2):
 		return (c1[0] * c2[0]) % self.p, (c1[1] * c2[1]) % self.p
 
+	def homomorphicMultiply(self, c, a):
+		return pow(c, a, self.p)
+		
 	def demo(self, message):
 		com = self.commit(message)
 		m, r = self.open()
@@ -76,6 +79,9 @@ class Pederson(Commitment):
 
 	def homomorphicAdd(self, c1, c2):
 		return (c1 * c2) % self.p
+
+	def homomorphicMultiply(self, c, a):
+		return pow(c, a, self.p)
 
 	def demo(self, message):
 		com = self.commit(message)

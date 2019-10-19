@@ -53,7 +53,7 @@ class ElGamal(PKEncryption):
 	def decrypt(self, c):
 		return utils.divide(c[1], pow(c[0], self.x, self.p), self.p)
 
-	def homomorphic(self, pk, c1, c2):
+	def homomorphicMultiply(self, pk, c1, c2):
 		return [(c1[0] * c2[0]) % self.p, (c1[1] * c2[1]) % self.p]
 
 	def demo(self, message):
@@ -68,19 +68,24 @@ class Paillier(PKEncryption):
 		self.security = security
 		self.n, self.sk = utils.composeOrder(security)
 		self.n2 = self.n * self.n
-		self.g = utils.coPrime(security << 1, self.n2, self.sk * self.n)
+		x = utils.randomBits(security) % self.n
+		self.g = 1 + x * self.n
+		# self.g = utils.coPrime(security << 1, self.n2, self.sk * self.n)
 
 	def encrypt(self, m):
-		r = utils.coPrime(self.security << 1, self.n2, self.sk * self.n)
-		return (pow(self.g, m, self.n2) * pow(r, self.n, self.n2)) % self.n2
+		r = utils.randomBits(self.security << 1) % self.n2
+		return (pow(self.g, m, self.n2) * pow(r, self.n << 1, self.n2)) % self.n2
 
 	def decrypt(self, c):
 		x = self.L(pow(c, self.sk, self.n2))
 		y = self.L(pow(self.g, self.sk, self.n2))
 		return utils.divide(x, y, self.n)
 
-	def homomorphic(self, c1, c2):
+	def homomorphicAdd(self, c1, c2):
 		return (c1 * c2) % self.n2
+
+	def homomorphicMultiply(self, c, a):
+		return pow(c, a, self.n2)
 
 	def L(self, x):
 		return int((x - 1) / self.n)
