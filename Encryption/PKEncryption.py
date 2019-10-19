@@ -70,11 +70,10 @@ class Paillier(PKEncryption):
 		self.n2 = self.n * self.n
 		x = utils.randomBits(security) % self.n
 		self.g = 1 + x * self.n
-		# self.g = utils.coPrime(security << 1, self.n2, self.sk * self.n)
 
 	def encrypt(self, m):
 		r = utils.randomBits(self.security << 1) % self.n2
-		return (pow(self.g, m, self.n2) * pow(r, self.n << 1, self.n2)) % self.n2
+		return (pow(self.g, m, self.n2) * pow(r, 2 * self.n, self.n2)) % self.n2
 
 	def decrypt(self, c):
 		x = self.L(pow(c, self.sk, self.n2))
@@ -88,7 +87,7 @@ class Paillier(PKEncryption):
 		return pow(c, a, self.n2)
 
 	def L(self, x):
-		return int((x - 1) / self.n)
+		return int((x - 1) // self.n)
 
 	def demo(self, message):
 		c = self.encrypt(message)
