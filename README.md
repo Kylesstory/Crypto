@@ -11,6 +11,6 @@ The supported algorithms are listed below:
 
 ***Digital signature***: RSA, DSA
 
-***Cryptographic commitment***: Hash-based, ElGamal, Pedersen
+***Cryptographic commitment***: Hash-based, RSA, ElGamal, Pedersen
 
 ***Zero knowledge proof***: SingleValue, Fiat-Shamir

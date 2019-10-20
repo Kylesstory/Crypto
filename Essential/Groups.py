@@ -18,10 +18,8 @@ class RSA(CompositeOrder):
 	def __init__(self, security):
 		super(RSA, self).__init__(security, 'RSA')
 		_lambda = self.p2q2 << 1
-		self.e = utils.coPrime(security, _lambda)
-		self.d = utils.modinv(self.e, _lambda)
-		self.params['e'] = self.e
-		self.params['d'] = self.d
+		self.params['e'] = self.e = utils.coPrime(security, _lambda)
+		self.params['d'] = self.d = utils.modinv(self.e, _lambda)
 
 class PrimeOrder(object):
 	""" Prime-order groups. """

@@ -34,7 +34,6 @@ class Commitment(object):
 		utils.show('%s commitment' % self.name, self.params)
 
 class HashCommit(Commitment):
-	"""docstring for HashCommit"""
 	def __init__(self, security):
 		self.security = security
 		self.name = 'Hash-based'
@@ -48,8 +47,23 @@ class HashCommit(Commitment):
 	def verify(self, m, r, com):
 		return com == utils.hash([m, r], self.security)
 
+class RSA(Groups.RSA, Commitment):
+	def __init__(self, security):
+		super(RSA, self).__init__(security)
+		self.params['g'] = self.g = utils.coPrime(security, self.n)
+
+	def commit(self, m):
+		self.m = m 
+		self.r = utils.randomBits(self.security, self.n)
+		return (pow(self.g, m, self.n) * pow(self.r, self.e, self.n)) % self.n
+
+	def verify(self, m, r, com):
+		return (com == (pow(self.g, m, self.n) * pow(r, self.e, self.n)) % self.n)
+
+	def add(self, c1, c2):
+		return (c1 * c2) % self.n
+
 class ElGamal(Groups.PrimeOrder, Commitment):
-	"""docstring for ElGamal"""
 	def __init__(self, security):
 		super(ElGamal, self).__init__(security, True, 'ElGamal')
 

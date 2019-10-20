@@ -9,7 +9,7 @@ trust = 8
 
 pkes = [PKE.RSA(security), PKE.ElGamal(security), PKE.Paillier(security), PKE.CramerShoup(security)]
 dss = [DS.RSA(security), DS.DSA(security)]
-commits = [Commit.HashCommit(security << 1), Commit.ElGamal(security), Commit.Pedersen(security)]
+commits = [Commit.HashCommit(security << 1), Commit.RSA(security), Commit.ElGamal(security), Commit.Pedersen(security)]
 zkps = [ZKP.SingleValue(security, trust), ZKP.FiatShamir(security, trust)]
 
 for algorithm in (pkes + dss + commits + zkps):
