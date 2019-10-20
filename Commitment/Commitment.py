@@ -31,13 +31,13 @@ class Commitment(object):
 		self.params['randomness'] = r
 		self.params['commitment'] = com
 		self.params['verification'] = self.verify(m, r, com)
-		utils.show(self.name, self.params)
+		utils.show('%s commitment' % self.name, self.params)
 
 class HashCommit(Commitment):
 	"""docstring for HashCommit"""
 	def __init__(self, security):
 		self.security = security
-		self.name = 'Hash-based commitment'
+		self.name = 'Hash-based'
 		self.params = {'security': security}
 
 	def commit(self, m):
@@ -54,7 +54,7 @@ class ElGamal(Commitment):
 		self.security = security
 		self.p, self.q, self.g = utils.primeOrder(security)
 		self.h = utils.coPrime(security, self.p, self.q)
-		self.name = 'ElGamal commitment'
+		self.name = 'ElGamal'
 		self.params = {'security': security, 'p': self.p, 'q': self.q, 'g': self.g, 'h': self.h}
 
 	def commit(self, m):
@@ -76,7 +76,7 @@ class Pedersen(Commitment):
 		self.security = security
 		self.p, self.q, self.g = utils.primeOrder(security)
 		self.h = utils.coPrime(security, self.p, self.q)
-		self.name = 'Pedersen commitment'
+		self.name = 'Pedersen'
 		self.params = {'security': security, 'p': self.p, 'q': self.q, 'g': self.g, 'h': self.h}
 
 	def commit(self, m):

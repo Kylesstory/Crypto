@@ -49,7 +49,7 @@ class ZeroKnowledgeProof(object):
 		self.params['commitment'] = com
 		self.params['challenges'] = queries
 		self.params['verification'] = allValid
-		utils.show(self.name, self.params)
+		utils.show('%s zero-knowledge proof' % self.name, self.params)
 
 class SingleValue(ZeroKnowledgeProof): 
 	""" Single value x that x is not a very small number. """
@@ -58,8 +58,8 @@ class SingleValue(ZeroKnowledgeProof):
 		self.trust = trust
 		self.p, self.q, self.g = utils.primeOrder(security)
 		self.proofs = {}
-		self.name = 'Single value zero-knowledge proof'
-		self.params = {'security': self.security, 'false positive probability': '2 ^ (-%d)' % self.trust, 'p': self.p, 'q': self.q, 'g': self.g}
+		self.name = 'Single value'
+		self.params = {'security': security, 'false positive probability': '2 ^ (-%d)' % self.trust, 'p': self.p, 'q': self.q, 'g': self.g}
 
 	def commit(self, x):
 		self.x = x
@@ -89,8 +89,8 @@ class FiatShamir(ZeroKnowledgeProof):
 		self.trust = trust
 		self.n, _ = utils.composeOrder(security)
 		self.proofs = {}
-		self.name = 'Fiat-Shamir zero-knowledge proof'
-		self.params = {'security': self.security, 'false positive probability': '2 ^ (-%d)' % self.trust, 'n': self.n}
+		self.name = 'Fiat-Shamir'
+		self.params = {'security': security, 'false positive probability': '2 ^ (-%d)' % self.trust, 'n': self.n}
 		
 	def commit(self, x):
 		self.x = x
@@ -124,6 +124,8 @@ class ChaumPedersen(ZeroKnowledgeProof):
 		self.g = self.committer.g
 		self.h = self.committer.h
 		self.proofs = {}
+		self.name = 'Chaum-Pedersen'
+		self.params = {'security': security, 'p': self.p, 'q': self.q, 'g': self.g, 'h': self.h}
 
 	def commit(self, x):
 		com = self.committer.commit(x)

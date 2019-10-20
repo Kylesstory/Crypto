@@ -26,7 +26,7 @@ class PKEncryption(object):
 		self.params['encrypted'] = c
 		self.params['decrypted'] = m
 		self.params['success'] = (message == m)
-		utils.show(self.name, self.params)
+		utils.show('%s encryption' % self.name, self.params)
 
 class RSA(PKEncryption):
 	def __init__(self, security):
@@ -35,7 +35,7 @@ class RSA(PKEncryption):
 		_lambda = p2q2 << 1
 		self.e = utils.coPrime(security, _lambda)
 		self.d = utils.modinv(self.e, _lambda)
-		self.name = 'RSA encryption'
+		self.name = 'RSA'
 		self.params = {'security': security, 'n': self.n, 'd': self.d, 'e': self.e}
 
 	def encrypt(self, m):
@@ -52,7 +52,7 @@ class ElGamal(PKEncryption):
 		self.security = security
 		self.p, self.q, self.g = utils.primeOrder(security)
 		self.x, self.y = utils.dlPair(security, self.g, self.q, self.p)
-		self.name = 'ElGamal encryption'
+		self.name = 'ElGamal'
 		self.params = {'security': security, 'g': self.g, 'q': self.q, 'p': self.p, 'sk': self.x, 'pk': self.y}
 
 	def encrypt(self, m):
@@ -74,7 +74,7 @@ class Paillier(PKEncryption):
 		self.n2 = self.n * self.n
 		x = utils.randomBits(security, self.n)
 		self.g = 1 + x * self.n
-		self.name = 'Paillier encryption'
+		self.name = 'Paillier'
 		self.params = {'security': security, 'n': self.n, 'sk': self.sk, 'g': self.g}
 
 	def encrypt(self, m):
@@ -106,7 +106,7 @@ class CramerShoup(PKEncryption):
 		self.c = pow(self.g, self.sk[0], self.p) * pow(self.h, self.sk[1], self.p) % self.p
 		self.d = pow(self.g, self.sk[2], self.p) * pow(self.h, self.sk[3], self.p) % self.p
 		self.y = pow(self.g, self.sk[4], self.p)
-		self.name = 'Cramer-Shoup encryption'
+		self.name = 'Cramer-Shoup'
 		self.params = {'security': security, 'g': self.g, 'q': self.q, 'p': self.p, 'h': self.h, 'sk': self.sk, 'pk': [self.c, self.d, self.y]}
 
 	def encrypt(self, m):
