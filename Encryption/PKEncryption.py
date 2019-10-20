@@ -11,13 +11,22 @@ class PKEncryption(object):
 	def encrypt(self,m):
 		""" The sender encrypts a message m using the public key and 
 		output a ciphertext c. """
-		raise NotImplementedError("The encryption has not been implemented.")
+		raise NotImplementedError("The encryption algorithm has not been implemented.")
 	
 	@abc.abstractmethod
 	def decrypt(self, c):
 		""" The receiver decrypts a ciphertext c and outputs a message m 
 		using the secret key. """
-		raise NotImplementedError("The decryption has not been implemented.")
+		raise NotImplementedError("The decryption algorithm has not been implemented.")
+
+	def demo(self, message):
+		c = self.encrypt(message)
+		m = self.decrypt(c)
+		self.params['message'] = message
+		self.params['encrypted'] = c
+		self.params['decrypted'] = m
+		self.params['success'] = (message == m)
+		utils.show(self.name, self.params)
 
 class RSA(PKEncryption):
 	def __init__(self, security):
@@ -26,6 +35,8 @@ class RSA(PKEncryption):
 		_lambda = p2q2 << 1
 		self.e = utils.coPrime(security, _lambda)
 		self.d = utils.modinv(self.e, _lambda)
+		self.name = 'RSA encryption'
+		self.params = {'security': security, 'n': self.n, 'd': self.d, 'e': self.e}
 
 	def encrypt(self, m):
 		return pow(m, self.e, self.n)
@@ -33,20 +44,16 @@ class RSA(PKEncryption):
 	def decrypt(self, c):
 		return pow(c, self.d, self.n)
 
-	def homomorphicAdd(self, c1, c2):
+	def add(self, c1, c2):
 		return (c1 * c2) % self.n
-
-	def demo(self, message):
-		c = self.encrypt(message)
-		m = self.decrypt(c)
-		param = {'security': self.security, 'n': self.n, 'd': self.d, 'e': self.e, 'message': message, 'encrypted': c, 'decrypted': m, 'success': (m == message)}
-		utils.show('RSA encryption', param)
 
 class ElGamal(PKEncryption):
 	def __init__(self, security):
 		self.security = security
 		self.p, self.q, self.g = utils.primeOrder(security)
 		self.x, self.y = utils.dlPair(security, self.g, self.q, self.p)
+		self.name = 'ElGamal encryption'
+		self.params = {'security': security, 'g': self.g, 'q': self.q, 'p': self.p, 'sk': self.x, 'pk': self.y}
 
 	def encrypt(self, m):
 		r, c1 = utils.dlPair(self.security, self.g, self.q, self.p)
@@ -56,14 +63,9 @@ class ElGamal(PKEncryption):
 	def decrypt(self, c):
 		return utils.divide(c[1], pow(c[0], self.x, self.p), self.p)
 
-	def homomorphicMultiply(self, pk, c1, c2):
+	def multiply(self, pk, c1, c2):
 		return [(c1[0] * c2[0]) % self.p, (c1[1] * c2[1]) % self.p]
 
-	def demo(self, message):
-		c = self.encrypt(message)
-		m = self.decrypt(c)
-		param = {'security': self.security, 'g': self.g, 'q': self.q, 'p': self.p, 'sk': self.x, 'pk': self.y, 'message': message, 'encrypted': c, 'decrypted': m, 'success': (m == message)}
-		utils.show('ElGamal encryption', param)
 
 class Paillier(PKEncryption):
 	def __init__(self, security):
@@ -72,6 +74,8 @@ class Paillier(PKEncryption):
 		self.n2 = self.n * self.n
 		x = utils.randomBits(security, self.n)
 		self.g = 1 + x * self.n
+		self.name = 'Paillier encryption'
+		self.params = {'security': security, 'n': self.n, 'sk': self.sk, 'g': self.g}
 
 	def encrypt(self, m):
 		r = utils.randomBits(self.security << 1, self.n2)
@@ -82,20 +86,14 @@ class Paillier(PKEncryption):
 		y = self.L(pow(self.g, self.sk, self.n2))
 		return utils.divide(x, y, self.n)
 
-	def homomorphicAdd(self, c1, c2):
+	def add(self, c1, c2):
 		return (c1 * c2) % self.n2
 
-	def homomorphicMultiply(self, c, a):
+	def multiply(self, c, a):
 		return pow(c, a, self.n2)
 
 	def L(self, x):
 		return (x - 1) // self.n
-
-	def demo(self, message):
-		c = self.encrypt(message)
-		m = self.decrypt(c)
-		param = {'security': self.security, 'n': self.n, 'sk': self.sk, 'g': self.g, 'message': message, 'encrypted': c, 'decrypted': m, 'success': (m == message)}
-		utils.show('Paillier encryption', param)
 
 class CramerShoup(PKEncryption):
 	def __init__(self, security):
@@ -108,6 +106,8 @@ class CramerShoup(PKEncryption):
 		self.c = pow(self.g, self.sk[0], self.p) * pow(self.h, self.sk[1], self.p) % self.p
 		self.d = pow(self.g, self.sk[2], self.p) * pow(self.h, self.sk[3], self.p) % self.p
 		self.y = pow(self.g, self.sk[4], self.p)
+		self.name = 'Cramer-Shoup encryption'
+		self.params = {'security': security, 'g': self.g, 'q': self.q, 'p': self.p, 'h': self.h, 'sk': self.sk, 'pk': [self.c, self.d, self.y]}
 
 	def encrypt(self, m):
 		r = utils.randomBits(self.security, self.q) 
@@ -124,10 +124,3 @@ class CramerShoup(PKEncryption):
 		t = (pow(c[0], ((self.sk[0] + self.sk[2] * h) % self.q) , self.p) * pow(c[1], ((self.sk[1] + self.sk[3] * h) % self.q), self.p)) % self.p
 		assert c[3] == t
 		return utils.divide(c[2], pow(c[0], self.sk[4], self.p), self.p)
-
-	def demo(self, message):
-		pks = [self.c, self.d, self.y]
-		c = self.encrypt(message)
-		m = self.decrypt(c)
-		param = {'security': self.security, 'g': self.g, 'h': self.h, 'q': self.q, 'p': self.p, 'sk': self.sk, 'pk': pks, 'message': message, 'encrypted': c, 'decrypted': m, 'success': (m == message)}
-		utils.show('Cramer Shoup encryption', param)

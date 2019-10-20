@@ -24,10 +24,21 @@ class Commitment(object):
 		the commitment com and returns its validity. """
 		raise NotImplementedError("The verification algorithm has not been implemented.")
 
+	def demo(self, message):
+		com = self.commit(message)
+		m, r = self.open()
+		self.params['message'] = m
+		self.params['randomness'] = r
+		self.params['commitment'] = com
+		self.params['verification'] = self.verify(m, r, com)
+		utils.show(self.name, self.params)
+
 class HashCommit(Commitment):
 	"""docstring for HashCommit"""
 	def __init__(self, security):
 		self.security = security
+		self.name = 'Hash-based commitment'
+		self.params = {'security': security}
 
 	def commit(self, m):
 		self.m = m
@@ -37,18 +48,14 @@ class HashCommit(Commitment):
 	def verify(self, m, r, com):
 		return com == utils.hash([m, r], self.security)
 
-	def demo(self, message):
-		com = self.commit(message)
-		m, r = self.open()
-		params = {'security': self.security, 'message': m, 'randomness': r, 'commitment': com, 'verification': self.verify(m, r, com)}
-		utils.show('Hash commitment', params)
-
 class ElGamal(Commitment):
 	"""docstring for ElGamal"""
 	def __init__(self, security):
 		self.security = security
 		self.p, self.q, self.g = utils.primeOrder(security)
 		self.h = utils.coPrime(security, self.p, self.q)
+		self.name = 'ElGamal commitment'
+		self.params = {'security': security, 'p': self.p, 'q': self.q, 'g': self.g, 'h': self.h}
 
 	def commit(self, m):
 		self.m = m
@@ -58,23 +65,19 @@ class ElGamal(Commitment):
 	def verify(self, m, r, com):
 		return (com[0] == pow(self.g, r, self.p)) and (com[1] == ((pow(self.g, m, self.p) * pow(self.h, self.r, self.p) % self.p)))
 
-	def homomorphicAdd(self, c1, c2):
+	def add(self, c1, c2):
 		return (c1[0] * c2[0]) % self.p, (c1[1] * c2[1]) % self.p
 
-	def homomorphicMultiply(self, c, a):
+	def multiply(self, c, a):
 		return pow(c, a, self.p)
-		
-	def demo(self, message):
-		com = self.commit(message)
-		m, r = self.open()
-		params = {'security': self.security, 'p': self.p, 'q': self.q, 'g': self.g, 'h': self.h, 'message': m, 'randomness': r, 'commitment': com, 'verification': self.verify(m, r, com)}
-		utils.show('ElGamal commitment', params)
 
 class Pedersen(Commitment):
 	def __init__(self, security):
 		self.security = security
 		self.p, self.q, self.g = utils.primeOrder(security)
 		self.h = utils.coPrime(security, self.p, self.q)
+		self.name = 'Pedersen commitment'
+		self.params = {'security': security, 'p': self.p, 'q': self.q, 'g': self.g, 'h': self.h}
 
 	def commit(self, m):
 		self.m = m
@@ -84,14 +87,9 @@ class Pedersen(Commitment):
 	def verify(self, m, r, com):
 		return com == ((pow(self.g, m, self.p)) * (pow(self.h, r, self.p)) % self.p)
 
-	def homomorphicAdd(self, c1, c2):
+	def add(self, c1, c2):
 		return (c1 * c2) % self.p
 
-	def homomorphicMultiply(self, c, a):
+	def multiply(self, c, a):
 		return pow(c, a, self.p)
 
-	def demo(self, message):
-		com = self.commit(message)
-		m, r = self.open()
-		params = {'security': self.security, 'p': self.p, 'q': self.q, 'g': self.g, 'h': self.h, 'message': m, 'randomness': r, 'commitment': com, 'verification': self.verify(m, r, com)}
-		utils.show('Pedersen commitment', params)

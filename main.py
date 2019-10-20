@@ -6,13 +6,15 @@ from Essential import Utilities as utils
 
 security = 128
 trust = 8
-# pkes = [PKE.RSA(security), PKE.ElGamal(security), PKE.Paillier(security), PKE.CramerShoup(security)]
-# dss = [DS.RSA(security), DS.DSA(security)]
-# commits = [Commit.HashCommit(security << 1), Commit.ElGamal(security), Commit.Pedersen(security)]
-zkps = [ZKP.SingleValue(security, trust)]
+message = utils.randomBits(security - 2)
 
-# for algorithm in (pkes + dss + commits):
-# 	algorithm.demo(utils.randomBits(security - 3))
+pkes = [PKE.RSA(security), PKE.ElGamal(security), PKE.Paillier(security), PKE.CramerShoup(security)]
+dss = [DS.RSA(security), DS.DSA(security)]
+commits = [Commit.HashCommit(security << 1), Commit.ElGamal(security), Commit.Pedersen(security)]
+zkps = [ZKP.SingleValue(security, trust), ZKP.FiatShamir(security, trust)]
 
-for zkp in zkps:
-	zkp.demo(utils.randomBits(security - 3))
+for algorithm in (pkes + dss + commits + zkps):
+	algorithm.demo(message)
+
+# for zkp in zkps:
+# 	zkp.demo(message)

@@ -20,6 +20,13 @@ class DigitalSignature(object):
 		signer's public key. """
 		raise NotImplementedError("The verification algorithm has not been implemented.")
 
+	def demo(self, message):
+		s = self.sign(message)
+		self.params['message'] = message
+		self.params['signature'] = s
+		self.params['verification'] = self.verify(message, s)
+		utils.show(self.name, self.params)
+
 class RSA(DigitalSignature):
 	def __init__(self, security):
 		self.security = security
@@ -27,23 +34,22 @@ class RSA(DigitalSignature):
 		_lambda = p2q2 << 1
 		self.e = utils.coPrime(security - 1, _lambda)
 		self.d = utils.modinv(self.e, _lambda)
+		self.name = 'RSA signature'
+		self.params = {'security': security, 'n': self.n, 'd': self.d, 'e': self.e}
 
 	def sign(self, m):
 		return pow(utils.hash(m, self.security, self.n), self.d, self.n)
 
 	def verify(self, m, s):
 		return pow(s, self.e, self.n) == utils.hash(m, self.security, self.n)
-
-	def demo(self, message):
-		s = self.sign(message)
-		param = {'security': self.security, 'n': self.n, 'd': self.d, 'e': self.e, 'message': message, 'signature': s, 'verification': self.verify(message, s)}
-		utils.show('RSA signature', param)
 		
 class DSA(DigitalSignature):
 	def __init__(self, security):
 		self.security = security
 		self.p, self.q, self.g = utils.primeOrder(security)
 		self.sk, self.pk = utils.dlPair(security, self.g, self.q, self.p)
+		self.name = 'DSA signature'
+		self.params = {'security': security, 'g': self.g, 'q': self.q, 'p': self.p, 'sk': self.sk, 'pk': self.pk}
 
 	def sign(self, m):
 		r = s = 0
@@ -61,9 +67,4 @@ class DSA(DigitalSignature):
 		w = utils.modinv(s, self.q)
 		gk = ((pow(self.g, utils.hash(m, self.security, self.q) * w, self.p) * pow(self.pk, r * w, self.p)) % self.p) % self.q
 		return (r == gk)
-
-	def demo(self, message):
-		s = self.sign(message)
-		param = {'security': self.security, 'g': self.g, 'q': self.q, 'p': self.p, 'sk': self.sk, 'pk': self.pk, 'message': message, 'signature': s, 'verification': self.verify(message, s)}
-		utils.show('DSA signature', param)
 	
