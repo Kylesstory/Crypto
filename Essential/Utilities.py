@@ -97,16 +97,6 @@ def strongPrime(length): # return a pair of primes p, q s.t. p = 2q + 1
 		p = (q << 1) + 1
 	return p, q
 
-def composeOrder(length): # return n and p2q2 as a compose order group
-	p, p2 = strongPrime(int(length / 2))
-	q = p
-	while (q == p): q, q2 = strongPrime(int(length / 2))
-	return p * q, p2 * q2
-
-def primeOrder(length): # return p, q, g as a prime order group
-	p, q = strongPrime(length)
-	return p, q, coPrime(length, p, q)
-
 def coPrime(length, n, q = 0): # find a number g coprime to n (with optional pow(g, q, n) = 1 if q > 1)
 	g = 1
 	while (g == 1) or (egcd(g, n)[0] != 1) or ((q > 1) and (pow(g, q, n) != 1)):

@@ -1,8 +1,8 @@
-from Essential import Utilities as utils
+from Essential import Groups, Utilities as utils
 import abc
 
 class Commitment(object):
-	"""docstring for Commitment"""
+	"""Cryptographic Commitment"""
 	def __init__(self, arg):
 		raise NotImplementedError("DigitalSignature is abstract.")
 	
@@ -48,14 +48,10 @@ class HashCommit(Commitment):
 	def verify(self, m, r, com):
 		return com == utils.hash([m, r], self.security)
 
-class ElGamal(Commitment):
+class ElGamal(Groups.PrimeOrder, Commitment):
 	"""docstring for ElGamal"""
 	def __init__(self, security):
-		self.security = security
-		self.p, self.q, self.g = utils.primeOrder(security)
-		self.h = utils.coPrime(security, self.p, self.q)
-		self.name = 'ElGamal'
-		self.params = {'security': security, 'p': self.p, 'q': self.q, 'g': self.g, 'h': self.h}
+		super(ElGamal, self).__init__(security, True, 'ElGamal')
 
 	def commit(self, m):
 		self.m = m
@@ -71,13 +67,9 @@ class ElGamal(Commitment):
 	def multiply(self, c, a):
 		return pow(c, a, self.p)
 
-class Pedersen(Commitment):
+class Pedersen(Groups.PrimeOrder, Commitment):
 	def __init__(self, security):
-		self.security = security
-		self.p, self.q, self.g = utils.primeOrder(security)
-		self.h = utils.coPrime(security, self.p, self.q)
-		self.name = 'Pedersen'
-		self.params = {'security': security, 'p': self.p, 'q': self.q, 'g': self.g, 'h': self.h}
+		super(Pedersen, self).__init__(security, True, 'Pedersen')
 
 	def commit(self, m):
 		self.m = m

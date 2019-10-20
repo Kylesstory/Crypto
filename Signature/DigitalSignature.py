@@ -1,4 +1,5 @@
-from Essential import Utilities as utils
+from Encryption.PKEncryption import RSA as PKE_RSA
+from Essential import Groups, Utilities as utils
 import abc
 
 class DigitalSignature(object):
@@ -27,15 +28,9 @@ class DigitalSignature(object):
 		self.params['verification'] = self.verify(message, s)
 		utils.show('%s signature' % self.name, self.params)
 
-class RSA(DigitalSignature):
+class RSA(Groups.RSA, DigitalSignature):
 	def __init__(self, security):
-		self.security = security
-		self.n, p2q2 = utils.composeOrder(security)
-		_lambda = p2q2 << 1
-		self.e = utils.coPrime(security - 1, _lambda)
-		self.d = utils.modinv(self.e, _lambda)
-		self.name = 'RSA'
-		self.params = {'security': security, 'n': self.n, 'd': self.d, 'e': self.e}
+		super(RSA, self).__init__(security)
 
 	def sign(self, m):
 		return pow(utils.hash(m, self.security, self.n), self.d, self.n)
@@ -43,13 +38,12 @@ class RSA(DigitalSignature):
 	def verify(self, m, s):
 		return pow(s, self.e, self.n) == utils.hash(m, self.security, self.n)
 		
-class DSA(DigitalSignature):
+class DSA(Groups.PrimeOrder, DigitalSignature):
 	def __init__(self, security):
-		self.security = security
-		self.p, self.q, self.g = utils.primeOrder(security)
+		super(DSA, self).__init__(security, False, 'DSA')
 		self.sk, self.pk = utils.dlPair(security, self.g, self.q, self.p)
-		self.name = 'DSA'
-		self.params = {'security': security, 'g': self.g, 'q': self.q, 'p': self.p, 'sk': self.sk, 'pk': self.pk}
+		self.params['sk'] = self.sk
+		self.params['pk'] = self.pk
 
 	def sign(self, m):
 		r = s = 0

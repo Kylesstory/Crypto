@@ -1,9 +1,9 @@
 from Commitment.Commitment import Pedersen
-from Essential import Utilities as utils
+from Essential import Groups, Utilities as utils
 import abc
 
 class ZeroKnowledgeProof(object):
-	"""docstring for ZeroKnowledgeProof"""
+	"""Zero-knowledge proofs"""
 	def __init__(self, security, trust):
 		raise NotImplementedError("ZeroKnowledgeProof is abstract.")
 	
@@ -43,7 +43,7 @@ class ZeroKnowledgeProof(object):
 			req = self.challenge(com, proof)
 			res = self.response(proof, req)
 			valid = self.verify(com, proof, req, res)
-			queries.append({'proof': proof, 'req': req, 'res': res, 'verified': valid})
+			queries.append({'proof': proof, 'request': req, 'response': res, 'verified': valid})
 			allValid = (allValid and valid)
 		self.params['secret'] = message
 		self.params['commitment'] = com
@@ -51,15 +51,12 @@ class ZeroKnowledgeProof(object):
 		self.params['verification'] = allValid
 		utils.show('%s zero-knowledge proof' % self.name, self.params)
 
-class SingleValue(ZeroKnowledgeProof): 
+class SingleValue(Groups.PrimeOrder, ZeroKnowledgeProof): 
 	""" Single value x that x is not a very small number. """
 	def __init__(self, security, trust):
-		self.security = security
-		self.trust = trust
-		self.p, self.q, self.g = utils.primeOrder(security)
+		super(SingleValue, self).__init__(security, False, 'Single value')
+		self.params['trust'] = self.trust = trust
 		self.proofs = {}
-		self.name = 'Single value'
-		self.params = {'security': security, 'false positive probability': '2 ^ (-%d)' % self.trust, 'p': self.p, 'q': self.q, 'g': self.g}
 
 	def commit(self, x):
 		self.x = x
@@ -82,15 +79,12 @@ class SingleValue(ZeroKnowledgeProof):
 		y = pow(self.g, res, self.p)
 		return (y == (com * proof % self.p)) if req == 1 else (y == proof)
 
-class FiatShamir(ZeroKnowledgeProof):
+class FiatShamir(Groups.CompositeOrder, ZeroKnowledgeProof):
 	""" To proof a value com is a square number of root x. """
 	def __init__(self, security, trust):
-		self.security = security
-		self.trust = trust
-		self.n, _ = utils.composeOrder(security)
+		super(FiatShamir, self).__init__(security, 'Fiat-Shamir')
+		self.params['trust'] = self.trust = trust
 		self.proofs = {}
-		self.name = 'Fiat-Shamir'
-		self.params = {'security': security, 'false positive probability': '2 ^ (-%d)' % self.trust, 'n': self.n}
 		
 	def commit(self, x):
 		self.x = x
@@ -113,23 +107,15 @@ class FiatShamir(ZeroKnowledgeProof):
 		y = pow(res, 2, self.n)
 		return (y == (com * proof % self.n)) if req == 1 else (y == proof)
 
-class ChaumPedersen(ZeroKnowledgeProof):
+class ChaumPedersen(Pedersen, ZeroKnowledgeProof):
 	""" The Pedersen commitment based ZKP algorithms. """
 	def __init__(self, security, trust):
-		self.security = security
-		self.trust = trust
-		self.committer = Pedersen(security)
-		self.p = self.committer.p
-		self.q = self.committer.q
-		self.g = self.committer.g
-		self.h = self.committer.h
+		super(ChaumPedersen, self).__init__(security)
+		self.params['trust'] = self.trust = trust
 		self.proofs = {}
 		self.name = 'Chaum-Pedersen'
-		self.params = {'security': security, 'p': self.p, 'q': self.q, 'g': self.g, 'h': self.h}
 
 	def commit(self, x):
-		com = self.committer.commit(x)
-		self.proofs[com] = self.committer.open()
-		return com
+		return super(ChaumPedersen, self).commit(x)
 	
 	

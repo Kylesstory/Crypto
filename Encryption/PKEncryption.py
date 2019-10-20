@@ -1,4 +1,4 @@
-from Essential import Utilities as utils
+from Essential import Groups, Utilities as utils
 import abc
 
 class PKEncryption(object):
@@ -28,15 +28,9 @@ class PKEncryption(object):
 		self.params['success'] = (message == m)
 		utils.show('%s encryption' % self.name, self.params)
 
-class RSA(PKEncryption):
+class RSA(Groups.RSA, PKEncryption):
 	def __init__(self, security):
-		self.security = security
-		self.n, p2q2 = utils.composeOrder(security)
-		_lambda = p2q2 << 1
-		self.e = utils.coPrime(security, _lambda)
-		self.d = utils.modinv(self.e, _lambda)
-		self.name = 'RSA'
-		self.params = {'security': security, 'n': self.n, 'd': self.d, 'e': self.e}
+		super(RSA, self).__init__(security)
 
 	def encrypt(self, m):
 		return pow(m, self.e, self.n)
@@ -47,13 +41,12 @@ class RSA(PKEncryption):
 	def add(self, c1, c2):
 		return (c1 * c2) % self.n
 
-class ElGamal(PKEncryption):
+class ElGamal(Groups.PrimeOrder, PKEncryption):
 	def __init__(self, security):
-		self.security = security
-		self.p, self.q, self.g = utils.primeOrder(security)
+		super(ElGamal, self).__init__(security, False, 'ElGamal')
 		self.x, self.y = utils.dlPair(security, self.g, self.q, self.p)
-		self.name = 'ElGamal'
-		self.params = {'security': security, 'g': self.g, 'q': self.q, 'p': self.p, 'sk': self.x, 'pk': self.y}
+		self.params['sk'] = self.x
+		self.params['pk'] = self.y
 
 	def encrypt(self, m):
 		r, c1 = utils.dlPair(self.security, self.g, self.q, self.p)
@@ -67,15 +60,13 @@ class ElGamal(PKEncryption):
 		return [(c1[0] * c2[0]) % self.p, (c1[1] * c2[1]) % self.p]
 
 
-class Paillier(PKEncryption):
+class Paillier(Groups.CompositeOrder, PKEncryption):
 	def __init__(self, security):
-		self.security = security
-		self.n, self.sk = utils.composeOrder(security)
+		super(Paillier, self).__init__(security, 'Paillier')
 		self.n2 = self.n * self.n
 		x = utils.randomBits(security, self.n)
-		self.g = 1 + x * self.n
-		self.name = 'Paillier'
-		self.params = {'security': security, 'n': self.n, 'sk': self.sk, 'g': self.g}
+		self.params['g'] = self.g = 1 + x * self.n
+		self.params['sk'] = self.sk = self.p2q2
 
 	def encrypt(self, m):
 		r = utils.randomBits(self.security << 1, self.n2)
@@ -86,28 +77,23 @@ class Paillier(PKEncryption):
 		y = self.L(pow(self.g, self.sk, self.n2))
 		return utils.divide(x, y, self.n)
 
+	def L(self, x):
+		return (x - 1) // self.n
+
 	def add(self, c1, c2):
 		return (c1 * c2) % self.n2
 
 	def multiply(self, c, a):
 		return pow(c, a, self.n2)
 
-	def L(self, x):
-		return (x - 1) // self.n
-
-class CramerShoup(PKEncryption):
+class CramerShoup(Groups.PrimeOrder, PKEncryption):
 	def __init__(self, security):
-		self.security = security
-		self.p, self.q, self.g = utils.primeOrder(security)
-		self.h = self.g
-		while self.h == self.g:
-			self.h = utils.coPrime(security, self.p, self.q)
-		self.sk = [utils.randomBits(security - 1, self.q) for i in range(5)]
+		super(CramerShoup, self).__init__(security, True, 'Cramer-Shoup')
+		self.params['sk'] = self.sk = [utils.randomBits(security - 1, self.q) for i in range(5)]
 		self.c = pow(self.g, self.sk[0], self.p) * pow(self.h, self.sk[1], self.p) % self.p
 		self.d = pow(self.g, self.sk[2], self.p) * pow(self.h, self.sk[3], self.p) % self.p
 		self.y = pow(self.g, self.sk[4], self.p)
-		self.name = 'Cramer-Shoup'
-		self.params = {'security': security, 'g': self.g, 'q': self.q, 'p': self.p, 'h': self.h, 'sk': self.sk, 'pk': [self.c, self.d, self.y]}
+		self.params['pk'] = [self.c, self.d, self.y]
 
 	def encrypt(self, m):
 		r = utils.randomBits(self.security, self.q) 
