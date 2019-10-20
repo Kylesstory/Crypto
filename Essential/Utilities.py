@@ -2,16 +2,17 @@ import hashlib, colorama
 from random import randrange, getrandbits
 from colorama import Fore
 
-def hash(x, length, modular = 1):
+def hash(x, length, modular = 0):
 	s = ''.join([str(i) for i in x]) if isinstance(x, list) else str(x)
 	x = hashlib.sha3_256(s.encode('utf-8')).hexdigest()
 	h = ''
 	length = int(length / 4)
 	while len(h) <= length: h = h + str(x)
-	return int(int(h[:length], 16) / modular)
+	return int(h[:length], 16) % modular if modular != 0 else int(h[:length], 16)
 
-def randomBits(bits):
-	return getrandbits(bits)
+def randomBits(bits, modular = 0):
+    r = getrandbits(bits)
+    return r if modular == 0 else (r % modular)
 
 ### referred to Märt Bakhoff
 ### https://stackoverflow.com/questions/4798654/modular-multiplicative-inverse-function-in-python
@@ -130,7 +131,7 @@ def deploy(data, padding = 4, comma = False):
 		print('[')
 		length = len(data)
 		for i in range(length): 
-			if isinstance(data[i], list):
+			if isinstance(data[i], (list, dict)):
 				print('%s' % (' ' * (padding)), end = '')
 				deploy(data[i], padding + 4, i != (length - 1))
 			else:

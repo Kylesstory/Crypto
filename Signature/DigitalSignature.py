@@ -2,20 +2,25 @@ from Essential import Utilities as utils
 import abc
 
 class DigitalSignature(object):
-	"""docstring for DigitalSignature"""
+	"""Digital Signatures"""
 	def __init__(self, arg):
+		""" The key (secret key / public key) generation algorithm. """
 		raise NotImplementedError("DigitalSignature is abstract.")
 	
 	@abc.abstractmethod
 	def sign(self, m):
-		pass
+		""" The signer signs a message m using the secret key and 
+		output a signature s. """
+		raise NotImplementedError("The signing algorithm has not been implemented.")
 	
 	@abc.abstractmethod
-	def verify(self, c):
-		pass
+	def verify(self, m, s):
+		""" The verifier inputs a message m and a signature s and 
+		outputs whether the signature is valid or not using the 
+		signer's public key. """
+		raise NotImplementedError("The verification algorithm has not been implemented.")
 
 class RSA(DigitalSignature):
-	"""docstring for RSA"""
 	def __init__(self, security):
 		self.security = security
 		self.n, p2q2 = utils.composeOrder(security)
@@ -35,7 +40,6 @@ class RSA(DigitalSignature):
 		utils.show('RSA signature', param)
 		
 class DSA(DigitalSignature):
-	"""docstring for DSA"""
 	def __init__(self, security):
 		self.security = security
 		self.p, self.q, self.g = utils.primeOrder(security)
@@ -45,7 +49,7 @@ class DSA(DigitalSignature):
 		r = s = 0
 		while r == s or s == 0:
 			while r == s or r == 0:
-				k = utils.randomBits(self.security) % self.q
+				k = utils.randomBits(self.security, self.q)
 				r = pow(self.g, k, self.p) % self.q
 			s = utils.divide(utils.hash(m, self.security, self.q) + self.sk * r, k, self.q)
 		return [r, s]

@@ -2,20 +2,24 @@ from Essential import Utilities as utils
 import abc
 
 class PKEncryption(object):
-	"""docstring for PKEncryption"""
+	"""Public Key Encryptions"""
 	def __init__(self, arg):
+		""" The key (secret key / public key) generation algorithm. """
 		raise NotImplementedError("PKEncryption is abstract.")
 	
 	@abc.abstractmethod
 	def encrypt(self,m):
-		pass
+		""" The sender encrypts a message m using the public key and 
+		output a ciphertext c. """
+		raise NotImplementedError("The encryption has not been implemented.")
 	
 	@abc.abstractmethod
 	def decrypt(self, c):
-		pass
+		""" The receiver decrypts a ciphertext c and outputs a message m 
+		using the secret key. """
+		raise NotImplementedError("The decryption has not been implemented.")
 
 class RSA(PKEncryption):
-	"""docstring for RSA"""
 	def __init__(self, security):
 		self.security = security
 		self.n, p2q2 = utils.composeOrder(security)
@@ -29,7 +33,7 @@ class RSA(PKEncryption):
 	def decrypt(self, c):
 		return pow(c, self.d, self.n)
 
-	def homomorphic(self, c1, c2):
+	def homomorphicAdd(self, c1, c2):
 		return (c1 * c2) % self.n
 
 	def demo(self, message):
@@ -39,7 +43,6 @@ class RSA(PKEncryption):
 		utils.show('RSA encryption', param)
 
 class ElGamal(PKEncryption):
-	"""docstring for ElGamal"""
 	def __init__(self, security):
 		self.security = security
 		self.p, self.q, self.g = utils.primeOrder(security)
@@ -63,16 +66,15 @@ class ElGamal(PKEncryption):
 		utils.show('ElGamal encryption', param)
 
 class Paillier(PKEncryption):
-	"""docstring for Paillier"""
 	def __init__(self, security):
 		self.security = security
 		self.n, self.sk = utils.composeOrder(security)
 		self.n2 = self.n * self.n
-		x = utils.randomBits(security) % self.n
+		x = utils.randomBits(security, self.n)
 		self.g = 1 + x * self.n
 
 	def encrypt(self, m):
-		r = utils.randomBits(self.security << 1) % self.n2
+		r = utils.randomBits(self.security << 1, self.n2)
 		return (pow(self.g, m, self.n2) * pow(r, 2 * self.n, self.n2)) % self.n2
 
 	def decrypt(self, c):
@@ -96,20 +98,19 @@ class Paillier(PKEncryption):
 		utils.show('Paillier encryption', param)
 
 class CramerShoup(PKEncryption):
-	"""docstring for CramerShoup"""
 	def __init__(self, security):
 		self.security = security
 		self.p, self.q, self.g = utils.primeOrder(security)
 		self.h = self.g
 		while self.h == self.g:
 			self.h = utils.coPrime(security, self.p, self.q)
-		self.sk = [utils.randomBits(security - 1) % self.q for i in range(5)]
+		self.sk = [utils.randomBits(security - 1, self.q) for i in range(5)]
 		self.c = pow(self.g, self.sk[0], self.p) * pow(self.h, self.sk[1], self.p) % self.p
 		self.d = pow(self.g, self.sk[2], self.p) * pow(self.h, self.sk[3], self.p) % self.p
 		self.y = pow(self.g, self.sk[4], self.p)
 
 	def encrypt(self, m):
-		r = utils.randomBits(self.security) % self.q 
+		r = utils.randomBits(self.security, self.q) 
 		u = pow(self.g, r, self.p)
 		v = pow(self.h, r, self.p)
 		w = m * pow(self.y, r, self.p) % self.p

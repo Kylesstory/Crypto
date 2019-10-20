@@ -8,14 +8,21 @@ class Commitment(object):
 	
 	@abc.abstractmethod
 	def commit(self, m):
-		pass
+		""" The prover inputs a message m, it outputs commitment com 
+		corresponding to m and a random number r; and the later two 
+		parameters are kept secret in this phase. """
+		raise NotImplementedError("The commitment algorithm has not been implemented.")
 
 	def open(self):
+		""" The prover opens the message m and the randomness r to 
+		the verifier where m and r were kept in the previous phase. """
 		return self.m, self.r
 	
 	@abc.abstractmethod
-	def verify(self, c):
-		pass		
+	def verify(self, m, r, com):
+		""" The verifier verifies the message m, the randomness r and 
+		the commitment com and returns its validity. """
+		raise NotImplementedError("The verification algorithm has not been implemented.")
 
 class HashCommit(Commitment):
 	"""docstring for HashCommit"""
@@ -45,7 +52,7 @@ class ElGamal(Commitment):
 
 	def commit(self, m):
 		self.m = m
-		self.r = utils.randomBits(self.security) % self.q
+		self.r = utils.randomBits(self.security, self.q)
 		return [pow(self.g, self.r, self.p), (pow(self.g, m, self.p) * pow(self.h, self.r, self.p)) % self.p]
 	
 	def verify(self, m, r, com):
@@ -63,7 +70,7 @@ class ElGamal(Commitment):
 		params = {'security': self.security, 'p': self.p, 'q': self.q, 'g': self.g, 'h': self.h, 'message': m, 'randomness': r, 'commitment': com, 'verification': self.verify(m, r, com)}
 		utils.show('ElGamal commitment', params)
 
-class Pederson(Commitment):
+class Pedersen(Commitment):
 	def __init__(self, security):
 		self.security = security
 		self.p, self.q, self.g = utils.primeOrder(security)
@@ -71,7 +78,7 @@ class Pederson(Commitment):
 
 	def commit(self, m):
 		self.m = m
-		self.r = utils.randomBits(self.security) % self.q
+		self.r = utils.randomBits(self.security, self.q)
 		return (pow(self.g, m, self.p)) * (pow(self.h, self.r, self.p)) % self.p
 
 	def verify(self, m, r, com):
@@ -87,4 +94,4 @@ class Pederson(Commitment):
 		com = self.commit(message)
 		m, r = self.open()
 		params = {'security': self.security, 'p': self.p, 'q': self.q, 'g': self.g, 'h': self.h, 'message': m, 'randomness': r, 'commitment': com, 'verification': self.verify(m, r, com)}
-		utils.show('Pederson commitment', params)
+		utils.show('Pedersen commitment', params)
