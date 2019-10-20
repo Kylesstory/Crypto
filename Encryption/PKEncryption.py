@@ -87,7 +87,7 @@ class Paillier(PKEncryption):
 		return pow(c, a, self.n2)
 
 	def L(self, x):
-		return int((x - 1) // self.n)
+		return (x - 1) // self.n
 
 	def demo(self, message):
 		c = self.encrypt(message)
@@ -113,13 +113,13 @@ class CramerShoup(PKEncryption):
 		u = pow(self.g, r, self.p)
 		v = pow(self.h, r, self.p)
 		w = m * pow(self.y, r, self.p) % self.p
-		h = utils.hash([u, v, w], self.security - 1)
+		h = utils.hash([u, v, w], self.security, self.q)
 		t = (self.c * pow(self.d, h, self.p)) % self.p
 		x = pow(t, r, self.p)
 		return [u, v, w, x]
 
 	def decrypt(self, c):
-		h = utils.hash([c[0], c[1], c[2]], self.security - 1)
+		h = utils.hash([c[0], c[1], c[2]], self.security, self.q)
 		t = (pow(c[0], ((self.sk[0] + self.sk[2] * h) % self.q) , self.p) * pow(c[1], ((self.sk[1] + self.sk[3] * h) % self.q), self.p)) % self.p
 		assert c[3] == t
 		return utils.divide(c[2], pow(c[0], self.sk[4], self.p), self.p)

@@ -2,13 +2,13 @@ import hashlib, colorama
 from random import randrange, getrandbits
 from colorama import Fore
 
-def hash(x, length):
+def hash(x, length, modular = 1):
 	s = ''.join([str(i) for i in x]) if isinstance(x, list) else str(x)
 	x = hashlib.sha3_256(s.encode('utf-8')).hexdigest()
 	h = ''
 	length = int(length / 4)
 	while len(h) <= length: h = h + str(x)
-	return int(h[:length], 16)
+	return int(int(h[:length], 16) / modular)
 
 def randomBits(bits):
 	return getrandbits(bits)
@@ -113,7 +113,7 @@ def coPrime(length, n, q = 0): # find a number g coprime to n (with optional pow
 	return g
 
 def dlPair(length, g, q, p): # find x and g^x
-	x = y = 0
+	x = 0
 	while x == 0: x = randomBits(length) % q
 	return x, pow(g, x, p)
 

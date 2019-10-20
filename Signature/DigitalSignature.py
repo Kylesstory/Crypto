@@ -22,12 +22,12 @@ class RSA(DigitalSignature):
 		_lambda = p2q2 << 1
 		self.e = utils.coPrime(security - 1, _lambda)
 		self.d = utils.modinv(self.e, _lambda)
-		
+
 	def sign(self, m):
-		return pow(utils.hash(m, self.security), self.d, self.n)
+		return pow(utils.hash(m, self.security, self.n), self.d, self.n)
 
 	def verify(self, m, s):
-		return pow(s, self.e, self.n) == utils.hash(m, self.security)
+		return pow(s, self.e, self.n) == utils.hash(m, self.security, self.n)
 
 	def demo(self, message):
 		s = self.sign(message)
@@ -47,8 +47,7 @@ class DSA(DigitalSignature):
 			while r == s or r == 0:
 				k = utils.randomBits(self.security) % self.q
 				r = pow(self.g, k, self.p) % self.q
-			s = utils.divide(utils.hash(m, self.security) + self.sk * r, k, self.q)
-			# s = (utils.modinv(k, self.q) * (utils.hash(m, self.security) + self.sk * r)) % self.q
+			s = utils.divide(utils.hash(m, self.security, self.q) + self.sk * r, k, self.q)
 		return [r, s]
 
 	def verify(self, m, sig):
@@ -56,7 +55,7 @@ class DSA(DigitalSignature):
 		s = sig[1]
 		assert r > 0 and r < self.q and s > 0 and s < self.q
 		w = utils.modinv(s, self.q)
-		gk = ((pow(self.g, utils.hash(m, self.security) * w, self.p) * pow(self.pk, r * w, self.p)) % self.p) % self.q
+		gk = ((pow(self.g, utils.hash(m, self.security, self.q) * w, self.p) * pow(self.pk, r * w, self.p)) % self.p) % self.q
 		return (r == gk)
 
 	def demo(self, message):
