@@ -13,4 +13,6 @@ The supported algorithms are listed below:
 
 ***Cryptographic commitment***: Hash-based, RSA, ElGamal, Pedersen
 
-***Zero knowledge proof***: SingleValue, Fiat-Shamir
+***Zero knowledge proof***: Schnorr, Guillou-Quisquater,  Fiat-Shamir, Chaum-Pedersen
+
+***Non-Interactive Zero knowledge proof***: Schnorr, Guillou-Quisquater, Chaum-Pedersen
