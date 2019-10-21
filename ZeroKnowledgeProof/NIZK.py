@@ -8,35 +8,12 @@ class NIZK(object):
 		raise NotImplementedError("NIZK is abstract.")
 	
 	@abc.abstractmethod
-	def commit(self, x):
-		""" The prover outputs a commit in the beginning of ZKP. """
-		raise NotImplementedError("The commit algorithm has not been implemented.")
-
-	@abc.abstractmethod
-	def request(self):
-		""" The prover outputs requests in the proving phase of ZKP. """
-		raise NotImplementedError("The request algorithm has not been implemented.")
-
-	@abc.abstractmethod
 	def challenge(self, com, req):
 		""" The main difference from zero knowledge and NIZK. The Fiat-Shamir transfer 
 		makes all ZKP algorithms non-interactive, as NIZK algorithms. The prover generates 
 		a challenge chg on input a commitment com and a request req. """
 		raise NotImplementedError("The challenge algorithm has not been implemented.")
 
-	@abc.abstractmethod
-	def response(self, req, chg):
-		""" The prover responses on receiving a challenge chg 
-		related to a request req. """
-		raise NotImplementedError("The response algorithm has not been implemented.")
-
-	@abc.abstractmethod
-	def verify(self, com, req, chg, res):
-		""" The verifier verifies the commitment com with a request req 
-		a challenge chg, and its response res; and then outputs its validity True or False. """
-		raise NotImplementedError("The verification algorithm has not been implemented.")
-
-	@abc.abstractmethod
 	def demonstrate(self, message):
 		""" The demo algorithm of NIZK algorithms is implemented in ZKP.demo(). """
 		com = self.commit(message)
