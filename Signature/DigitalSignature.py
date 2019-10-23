@@ -54,7 +54,7 @@ class RSA(Groups.RSA, DigitalSignature):
 class DSA(Groups.PrimeOrder, DigitalSignature):
     def __init__(self, security):
         super(DSA, self).__init__(security, False, 'DSA')
-        self.sk, self.pk = utils.dlPair(security, self.g, self.q, self.p)
+        self.sk, self.pk = utils.dl_pair(security, self.g, self.q, self.p)
         self.params['sk'] = self.sk
         self.params['pk'] = self.pk
 
@@ -62,7 +62,7 @@ class DSA(Groups.PrimeOrder, DigitalSignature):
         r = s = 0
         while r == s or s == 0:
             while r == s or r == 0:
-                k = utils.randomBits(self.security, self.q)
+                k = utils.random_bits(self.security, self.q)
                 r = pow(self.g, k, self.p) % self.q
             s = utils.divide(utils.hash(m, self.security,
                                         self.q) + self.sk * r, k, self.q)
@@ -72,7 +72,7 @@ class DSA(Groups.PrimeOrder, DigitalSignature):
         r = sig[0]
         s = sig[1]
         assert r > 0 and r < self.q and s > 0 and s < self.q
-        w = utils.modinv(s, self.q)
+        w = utils.mod_inv(s, self.q)
         gk = ((pow(self.g, utils.hash(m, self.security, self.q) * w,
                    self.p) * pow(self.pk, r * w, self.p)) % self.p) % self.q
         return (r == gk)

@@ -27,5 +27,5 @@ nizks = [NIZK.Schnorr(security), NIZK.GuillouQuisquater(security),
          NIZK.ChaumPedersen(security)]
 
 for algorithm in (pkes + dss + commits + zkps + nizks):
-    message = utils.randomBits(security - 2)
+    message = utils.random_bits(security - 2)
     algorithm.demo(message)

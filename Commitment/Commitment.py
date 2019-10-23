@@ -53,7 +53,7 @@ class HashCommit(Commitment):
 
     def commit(self, m):
         self.m = m
-        self.r = utils.randomBits(self.security)
+        self.r = utils.random_bits(self.security)
         return utils.hash([self.m, self.r], self.security)
 
     def verify(self, m, r, com):
@@ -63,11 +63,11 @@ class HashCommit(Commitment):
 class RSA(Groups.RSA, Commitment):
     def __init__(self, security):
         super(RSA, self).__init__(security)
-        self.params['g'] = self.g = utils.coPrime(security, self.n)
+        self.params['g'] = self.g = utils.coprime(security, self.n)
 
     def commit(self, m):
         self.m = m
-        self.r = utils.randomBits(self.security, self.n)
+        self.r = utils.random_bits(self.security, self.n)
         return (pow(self.g, m, self.n) * pow(self.r, self.e, self.n)) % self.n
 
     def verify(self, m, r, com):
@@ -84,7 +84,7 @@ class ElGamal(Groups.PrimeOrder, Commitment):
 
     def commit(self, m):
         self.m = m
-        self.r = utils.randomBits(self.security, self.q)
+        self.r = utils.random_bits(self.security, self.q)
         return [pow(self.g, self.r, self.p),
                 (pow(self.g, m, self.p) * pow(self.h, self.r, self.p))
                 % self.p]
@@ -105,7 +105,7 @@ class Pedersen(Groups.PrimeOrder, Commitment):
 
     def commit(self, m):
         self.m = m
-        self.r = utils.randomBits(self.security, self.q)
+        self.r = utils.random_bits(self.security, self.q)
         return (pow(self.g, m, self.p)) * (pow(self.h, self.r, self.p)) % self.p
 
     def verify(self, m, r, com):

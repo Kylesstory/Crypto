@@ -57,12 +57,12 @@ class RSA(Groups.RSA, PKEncryption):
 class ElGamal(Groups.PrimeOrder, PKEncryption):
     def __init__(self, security):
         super(ElGamal, self).__init__(security, False, 'ElGamal')
-        self.x, self.y = utils.dlPair(security, self.g, self.q, self.p)
+        self.x, self.y = utils.dl_pair(security, self.g, self.q, self.p)
         self.params['sk'] = self.x
         self.params['pk'] = self.y
 
     def encrypt(self, m):
-        r, c1 = utils.dlPair(self.security, self.g, self.q, self.p)
+        r, c1 = utils.dl_pair(self.security, self.g, self.q, self.p)
         c2 = (m * pow(self.y, r, self.p)) % self.p
         return [c1, c2]
 
@@ -77,12 +77,12 @@ class Paillier(Groups.CompositeOrder, PKEncryption):
     def __init__(self, security):
         super(Paillier, self).__init__(security, 'Paillier')
         self.n2 = self.n * self.n
-        x = utils.randomBits(security, self.n)
+        x = utils.random_bits(security, self.n)
         self.params['g'] = self.g = 1 + x * self.n
         self.params['sk'] = self.sk = self.p2q2
 
     def encrypt(self, m):
-        r = utils.randomBits(self.security << 1, self.n2)
+        r = utils.random_bits(self.security << 1, self.n2)
         return (pow(self.g, m, self.n2) * pow(r, 2 * self.n, self.n2)) % self.n2
 
     def decrypt(self, c):
@@ -103,7 +103,7 @@ class Paillier(Groups.CompositeOrder, PKEncryption):
 class CramerShoup(Groups.PrimeOrder, PKEncryption):
     def __init__(self, security):
         super(CramerShoup, self).__init__(security, True, 'Cramer-Shoup')
-        self.params['sk'] = self.sk = [utils.randomBits(
+        self.params['sk'] = self.sk = [utils.random_bits(
             security - 1, self.q) for i in range(5)]
         self.c = pow(self.g, self.sk[0], self.p) * \
             pow(self.h, self.sk[1], self.p) % self.p
@@ -113,7 +113,7 @@ class CramerShoup(Groups.PrimeOrder, PKEncryption):
         self.params['pk'] = [self.c, self.d, self.y]
 
     def encrypt(self, m):
-        r = utils.randomBits(self.security, self.q)
+        r = utils.random_bits(self.security, self.q)
         u = pow(self.g, r, self.p)
         v = pow(self.h, r, self.p)
         w = m * pow(self.y, r, self.p) % self.p

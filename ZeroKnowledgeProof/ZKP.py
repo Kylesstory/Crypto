@@ -81,13 +81,13 @@ class Schnorr(Groups.PrimeOrder, ZeroKnowledgeProof):
         return pow(self.g, x, self.p)
 
     def request(self):
-        r = utils.randomBits(self.security, self.q)
+        r = utils.random_bits(self.security, self.q)
         R = pow(self.g, r, self.p)
         self.randomness[R] = r
         return R
 
     def challenge(self, com, req):
-        return utils.randomBits(self.security, self.q)
+        return utils.random_bits(self.security, self.q)
 
     def response(self, req, chg):
         r = self.randomness[req]
@@ -113,13 +113,13 @@ class GuillouQuisquater(Groups.RSA, ZeroKnowledgeProof):
         return pow(x, self.e, self.n)
 
     def request(self):
-        r = utils.coPrime(self.security, self.order)
+        r = utils.coprime(self.security, self.order)
         R = pow(r, self.e, self.n)
         self.randomness[R] = r
         return R
 
     def challenge(self, com, req):
-        return utils.randomBits(self.security, self.order)
+        return utils.random_bits(self.security, self.order)
 
     def response(self, req, chg):
         r = self.randomness[req]
@@ -143,13 +143,13 @@ class FiatShamir(Groups.CompositeOrder, ZeroKnowledgeProof):
         return pow(x, 2, self.n)
 
     def request(self):
-        r = utils.randomBits(self.security, self.n)
+        r = utils.random_bits(self.security, self.n)
         R = pow(r, 2, self.n)
         self.randomness[R] = r
         return R
 
     def challenge(self, com, req):
-        return utils.randomBits(1)
+        return utils.random_bits(1)
 
     def response(self, req, chg):
         r = self.randomness[req]
@@ -173,14 +173,14 @@ class ChaumPedersen(Groups.PrimeOrder, ZeroKnowledgeProof):
         return [pow(self.g, x, self.p), pow(self.h, x, self.p)]
 
     def request(self):
-        r = utils.randomBits(self.security, self.q)
+        r = utils.random_bits(self.security, self.q)
         R1 = pow(self.g, r, self.p)
         R2 = pow(self.h, r, self.p)
         self.randomness[R1] = self.randomness[R2] = r
         return [R1, R2]
 
     def challenge(self, com, req):
-        return utils.randomBits(self.security, self.q)
+        return utils.random_bits(self.security, self.q)
 
     def response(self, req, chg):
         assert self.randomness[req[0]] == self.randomness[req[1]]

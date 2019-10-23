@@ -21,7 +21,7 @@ def hash(x, length, modular=0):
     return int(h[:length], 16) % modular if modular != 0 else int(h[:length], 16)
 
 
-def randomBits(bits, modular=0):
+def random_bits(bits, modular=0):
     r = getrandbits(bits)
     return r if modular == 0 else (r % modular)
 
@@ -37,7 +37,7 @@ def egcd(a, b):
         return (g, x - (b // a) * y, y)
 
 
-def modinv(a, m):
+def mod_inv(a, m):
     g, x, y = egcd(a, m)
     if g != 1:
         return -1  # slightly modified here from original program
@@ -109,7 +109,7 @@ def generate_prime_number(length=1024):
     return p
 
 
-def strongPrime(length):  # return a pair of primes p, q s.t. p = 2q + 1
+def strong_prime(length):  # return a pair of primes p, q s.t. p = 2q + 1
     p = q = 4
     while not is_prime(p, 128):
         q = generate_prime_number(length - 1)
@@ -117,22 +117,22 @@ def strongPrime(length):  # return a pair of primes p, q s.t. p = 2q + 1
     return p, q
 
 
-def coPrime(length, n, q=0):  # find a number g coprime to n (with optional pow(g, q, n) = 1 if q > 1)
+def coprime(length, n, q=0):  # find a number g coprime to n (with optional pow(g, q, n) = 1 if q > 1)
     g = 1
     while (g == 1) or (egcd(g, n)[0] != 1) or ((q > 1) and (pow(g, q, n) != 1)):
-        g = randomBits(length) % n
+        g = random_bits(length) % n
     return g
 
 
-def dlPair(length, g, q, p):  # find x and g^x
+def dl_pair(length, g, q, p):  # find x and g^x
     x = 0
     while x == 0:
-        x = randomBits(length) % q
+        x = random_bits(length) % q
     return x, pow(g, x, p)
 
 
 def divide(a, b, n):
-    return (a * modinv(b, n)) % n
+    return (a * mod_inv(b, n)) % n
 
 
 def show(header, data):
@@ -151,7 +151,7 @@ def deploy(data, padding=4, comma=False):
                 deploy(data[i], padding + 4, i != (length - 1))
             else:
                 print('%s%s%s' % (' ' * padding,
-                                  colorfulTypes(data[i]), ',' if i != (length - 1) else ''))
+                                  colorful_type(data[i]), ',' if i != (length - 1) else ''))
         print('%s]%s' % (' ' * (padding - 4), ',' if comma else ''))
     elif isinstance(data, dict):
         print('{')
@@ -163,12 +163,12 @@ def deploy(data, padding=4, comma=False):
             if isinstance(data[key], (list, dict)):
                 deploy(data[key], padding + 4, i != (length - 1))
             else:
-                print('%s%s' % (colorfulTypes(
+                print('%s%s' % (colorful_type(
                     data[key]), ',' if i != (length - 1) else ''))
         print('%s}%s' % (' ' * (padding - 4), ',' if comma else ''))
 
 
-def colorfulTypes(raw):
+def colorful_type(raw):
     if isinstance(raw, bool):
         return '%s%r%s' % (Fore.YELLOW, raw, Fore.RESET)
     elif isinstance(raw, int):
