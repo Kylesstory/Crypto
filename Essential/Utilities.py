@@ -1,21 +1,34 @@
-import hashlib, colorama
+# -*- coding: utf-8 -*-
+"""
+.. module:: Utilities
+   :synopsis: The utilities.
+.. moduleauthor:: Kyle
+"""
+
+import hashlib
+import colorama
 from random import randrange, getrandbits
 from colorama import Fore
 
-def hash(x, length, modular = 0):
-	s = ''.join([str(i) for i in x]) if isinstance(x, list) else str(x)
-	x = hashlib.sha3_256(s.encode('utf-8')).hexdigest()
-	h = ''
-	length = int(length / 4)
-	while len(h) <= length: h = h + str(x)
-	return int(h[:length], 16) % modular if modular != 0 else int(h[:length], 16)
 
-def randomBits(bits, modular = 0):
+def hash(x, length, modular=0):
+    s = ''.join([str(i) for i in x]) if isinstance(x, list) else str(x)
+    x = hashlib.sha3_256(s.encode('utf-8')).hexdigest()
+    h = ''
+    length = int(length / 4)
+    while len(h) <= length:
+        h = h + str(x)
+    return int(h[:length], 16) % modular if modular != 0 else int(h[:length], 16)
+
+
+def randomBits(bits, modular=0):
     r = getrandbits(bits)
     return r if modular == 0 else (r % modular)
 
-### referred to Märt Bakhoff
-### https://stackoverflow.com/questions/4798654/modular-multiplicative-inverse-function-in-python
+# referred to Märt Bakhoff
+# https://stackoverflow.com/questions/4798654/modular-multiplicative-inverse-function-in-python
+
+
 def egcd(a, b):
     if a == 0:
         return (b, 0, 1)
@@ -23,16 +36,19 @@ def egcd(a, b):
         g, y, x = egcd(b % a, a)
         return (g, x - (b // a) * y, y)
 
+
 def modinv(a, m):
     g, x, y = egcd(a, m)
     if g != 1:
-        return -1 # slightly modified here from original program
+        return -1  # slightly modified here from original program
     else:
         return x % m
 
-### referred to Antoine Prudhomme
-### https://medium.com/@prudywsh/how-to-generate-big-prime-numbers-miller-rabin-49e6e6af32fb
-def is_prime(n, k = 128):
+# referred to Antoine Prudhomme
+# https://medium.com/@prudywsh/how-to-generate-big-prime-numbers-miller-rabin-49e6e6af32fb
+
+
+def is_prime(n, k=128):
     """ Test if a number is prime
         Args:
             n -- int -- the number to test
@@ -66,6 +82,7 @@ def is_prime(n, k = 128):
                 return False
     return True
 
+
 def generate_prime_candidate(length):
     """ Generate an odd integer randomly
         Args:
@@ -77,6 +94,7 @@ def generate_prime_candidate(length):
     # apply a mask to set MSB and LSB to 1
     p |= (1 << length - 1) | 1
     return p
+
 
 def generate_prime_number(length=1024):
     """ Generate a prime
@@ -90,60 +108,70 @@ def generate_prime_number(length=1024):
         p = generate_prime_candidate(length)
     return p
 
-def strongPrime(length): # return a pair of primes p, q s.t. p = 2q + 1 
-	p = q = 4
-	while not is_prime(p, 128):
-		q = generate_prime_number(length - 1)
-		p = (q << 1) + 1
-	return p, q
 
-def coPrime(length, n, q = 0): # find a number g coprime to n (with optional pow(g, q, n) = 1 if q > 1)
-	g = 1
-	while (g == 1) or (egcd(g, n)[0] != 1) or ((q > 1) and (pow(g, q, n) != 1)):
-		g = randomBits(length) % n
-	return g
+def strongPrime(length):  # return a pair of primes p, q s.t. p = 2q + 1
+    p = q = 4
+    while not is_prime(p, 128):
+        q = generate_prime_number(length - 1)
+        p = (q << 1) + 1
+    return p, q
 
-def dlPair(length, g, q, p): # find x and g^x
-	x = 0
-	while x == 0: x = randomBits(length) % q
-	return x, pow(g, x, p)
+
+def coPrime(length, n, q=0):  # find a number g coprime to n (with optional pow(g, q, n) = 1 if q > 1)
+    g = 1
+    while (g == 1) or (egcd(g, n)[0] != 1) or ((q > 1) and (pow(g, q, n) != 1)):
+        g = randomBits(length) % n
+    return g
+
+
+def dlPair(length, g, q, p):  # find x and g^x
+    x = 0
+    while x == 0:
+        x = randomBits(length) % q
+    return x, pow(g, x, p)
+
 
 def divide(a, b, n):
-	return (a * modinv(b, n)) % n
+    return (a * modinv(b, n)) % n
+
 
 def show(header, data):
-	print('%s ' % (header), end = '')
-	deploy(data)
-	print('')
+    print('%s ' % (header), end='')
+    deploy(data)
+    print('')
 
-def deploy(data, padding = 4, comma = False):
-	if isinstance(data, list):
-		print('[')
-		length = len(data)
-		for i in range(length): 
-			if isinstance(data[i], (list, dict)):
-				print('%s' % (' ' * (padding)), end = '')
-				deploy(data[i], padding + 4, i != (length - 1))
-			else:
-				print('%s%s%s' % (' ' * padding, colorfulTypes(data[i]), ',' if i != (length - 1) else ''))
-		print('%s]%s' % (' ' * (padding - 4), ',' if comma else ''))
-	elif isinstance(data, dict):
-		print('{')
-		keys = [ * data ]
-		length = len(keys)
-		for i in range(length): 
-			key = keys[i]
-			print('%s%s: ' % (' ' * padding, key), end = '')
-			if isinstance(data[key], (list, dict)):
-				deploy(data[key], padding + 4, i != (length - 1))
-			else:
-				print('%s%s' % (colorfulTypes(data[key]), ',' if i != (length - 1) else ''))
-		print('%s}%s' % (' ' * (padding - 4), ',' if comma else ''))
+
+def deploy(data, padding=4, comma=False):
+    if isinstance(data, list):
+        print('[')
+        length = len(data)
+        for i in range(length):
+            if isinstance(data[i], (list, dict)):
+                print('%s' % (' ' * (padding)), end='')
+                deploy(data[i], padding + 4, i != (length - 1))
+            else:
+                print('%s%s%s' % (' ' * padding,
+                                  colorfulTypes(data[i]), ',' if i != (length - 1) else ''))
+        print('%s]%s' % (' ' * (padding - 4), ',' if comma else ''))
+    elif isinstance(data, dict):
+        print('{')
+        keys = [* data]
+        length = len(keys)
+        for i in range(length):
+            key = keys[i]
+            print('%s%s: ' % (' ' * padding, key), end='')
+            if isinstance(data[key], (list, dict)):
+                deploy(data[key], padding + 4, i != (length - 1))
+            else:
+                print('%s%s' % (colorfulTypes(
+                    data[key]), ',' if i != (length - 1) else ''))
+        print('%s}%s' % (' ' * (padding - 4), ',' if comma else ''))
+
 
 def colorfulTypes(raw):
-	if isinstance(raw, bool):
-		return '%s%r%s' % (Fore.YELLOW, raw, Fore.RESET)
-	elif isinstance(raw, int):
-		return '%s%d%s' % (Fore.YELLOW, raw, Fore.RESET) if raw < 100000 else '%s\'%x\'%s' % (Fore.GREEN, raw, Fore.RESET)
-	elif isinstance(raw, str):
-		return '%s\'%s\'%s' % (Fore.GREEN, raw, Fore.RESET)
+    if isinstance(raw, bool):
+        return '%s%r%s' % (Fore.YELLOW, raw, Fore.RESET)
+    elif isinstance(raw, int):
+        return '%s%d%s' % (Fore.YELLOW, raw, Fore.RESET) if raw < 100000 else '%s\'%x\'%s' % (Fore.GREEN, raw, Fore.RESET)
+    elif isinstance(raw, str):
+        return '%s\'%s\'%s' % (Fore.GREEN, raw, Fore.RESET)
