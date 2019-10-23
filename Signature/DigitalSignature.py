@@ -19,16 +19,16 @@ class DigitalSignature(object):
 
     @abc.abstractmethod
     def sign(self, m):
-        """ The signer signs a message m using the secret key and 
-        output a signature s. """
+        # The signer signs a message m using the secret key and
+        # output a signature s.
         raise NotImplementedError(
             "The signing algorithm has not been implemented.")
 
     @abc.abstractmethod
     def verify(self, m, s):
-        """ The verifier inputs a message m and a signature s and 
-        outputs whether the signature is valid or not using the 
-        signer's public key. """
+        # The verifier inputs a message m and a signature s and
+        # outputs whether the signature is valid or not using the
+        # signer's public key.
         raise NotImplementedError(
             "The verification algorithm has not been implemented.")
 

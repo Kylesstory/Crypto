@@ -90,9 +90,7 @@ class ElGamal(Groups.PrimeOrder, Commitment):
                 % self.p]
 
     def verify(self, m, r, com):
-        return (com[0] == pow(self.g, r, self.p)) and
-        (com[1] == ((pow(self.g, m, self.p)
-                     * pow(self.h, self.r, self.p) % self.p)))
+        return (com[0] == pow(self.g, r, self.p)) and (com[1] == ((pow(self.g, m, self.p) * pow(self.h, self.r, self.p) % self.p)))
 
     def add(self, c1, c2):
         return (c1[0] * c2[0]) % self.p, (c1[1] * c2[1]) % self.p
@@ -108,12 +106,10 @@ class Pedersen(Groups.PrimeOrder, Commitment):
     def commit(self, m):
         self.m = m
         self.r = utils.randomBits(self.security, self.q)
-        return (pow(self.g, m, self.p))
-        * (pow(self.h, self.r, self.p)) % self.p
+        return (pow(self.g, m, self.p)) * (pow(self.h, self.r, self.p)) % self.p
 
     def verify(self, m, r, com):
-        return com == ((pow(self.g, m, self.p))
-                       * (pow(self.h, r, self.p)) % self.p)
+        return com == ((pow(self.g, m, self.p)) * (pow(self.h, r, self.p)) % self.p)
 
     def add(self, c1, c2):
         return (c1 * c2) % self.p

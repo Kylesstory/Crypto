@@ -18,15 +18,15 @@ class PKEncryption(object):
 
     @abc.abstractmethod
     def encrypt(self, m):
-        """ The sender encrypts a message m using the public key and 
-        output a ciphertext c. """
+        # The sender encrypts a message m using the public key and
+        # output a ciphertext c.
         raise NotImplementedError(
             "The encryption algorithm has not been implemented.")
 
     @abc.abstractmethod
     def decrypt(self, c):
-        """ The receiver decrypts a ciphertext c and outputs a message m 
-        using the secret key. """
+        # The receiver decrypts a ciphertext c and outputs a message m
+        # using the secret key.
         raise NotImplementedError(
             "The decryption algorithm has not been implemented.")
 
@@ -83,8 +83,7 @@ class Paillier(Groups.CompositeOrder, PKEncryption):
 
     def encrypt(self, m):
         r = utils.randomBits(self.security << 1, self.n2)
-        return (pow(self.g, m, self.n2) * pow(r, 2 * self.n, self.n2))
-        % self.n2
+        return (pow(self.g, m, self.n2) * pow(r, 2 * self.n, self.n2)) % self.n2
 
     def decrypt(self, c):
         x = self.L(pow(c, self.sk, self.n2))
@@ -126,7 +125,6 @@ class CramerShoup(Groups.PrimeOrder, PKEncryption):
     def decrypt(self, c):
         h = utils.hash([c[0], c[1], c[2]], self.security, self.q)
         t = (pow(c[0], ((self.sk[0] + self.sk[2] * h) % self.q), self.p) *
-             pow(c[1], ((self.sk[1] + self.sk[3] * h) % self.q), self.p))
-        % self.p
+             pow(c[1], ((self.sk[1] + self.sk[3] * h) % self.q), self.p)) % self.p
         assert c[3] == t
         return utils.divide(c[2], pow(c[0], self.sk[4], self.p), self.p)
